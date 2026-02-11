@@ -1,6 +1,7 @@
-```The purpose of this file is to create a Supabase Client by using the url and the 
+/*
+The purpose of this file is to create a Supabase Client by using the url and the 
 key, in order to be able to communicate with the Database.
-```;
+*/
 
 const { createClient } = require("@supabase/supabase-js");
 require("dotenv").config();

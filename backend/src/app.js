@@ -5,6 +5,9 @@ const cors = require("cors");
 const helmet = require("helmet");
 const config = require("./config/env");
 
+//Importing routes
+const authRoutes = require("./routes/authRoutes");
+
 const app = express();
 
 //Security middleware
@@ -22,6 +25,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+//API routes
+app.use("/api/auth", authRoutes);
+
 //Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
@@ -30,8 +36,6 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
-//API routes
 
 // 404 handler
 app.use((req, res) => {
@@ -46,11 +50,12 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.status || 500).json({
     error: err.message || "Internal server error",
-    ...app(config.env === "development" && { stack: err.stack }),
+    ...(config.env === "development" && { stack: err.stack }),
   });
 });
 
 module.exports = app;
+
 /*DOCUMENTATION
 1- we import the needed libraries. cors allows other servers to communicate.
 helmet ensures security by setting HTTP headers.
@@ -62,4 +67,5 @@ config file streamlines the environment variables needed.
 6- 404 handler is to respond to request paths that do not exist.
 7- Custom error handler called whenever next(err) or error is thrown. returns
 the error message or internal server error and if in development mode the error stack.
+8- Routes section: register the individual routes and assign them unique paths.
 */
