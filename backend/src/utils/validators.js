@@ -25,7 +25,10 @@ const profileSchema = Joi.object({
   }),
   education_level: Joi.string()
     .valid(
-      "Elementary, High school, Bachelor's degree , Master's degree or higher",
+      "Elementary",
+      "High school",
+      "Bachelor's degree",
+      "Master's degree or higher",
     )
     .required()
     .messages({

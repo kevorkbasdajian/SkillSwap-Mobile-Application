@@ -2,7 +2,6 @@
 in*/
 const { verifyToken } = require("../utils/jwt");
 const supabase = require("../config/database");
-const { verify } = require("jsonwebtoken");
 
 const authenticate = async (req, res, next) => {
   try {
@@ -35,11 +34,10 @@ const authenticate = async (req, res, next) => {
       return res.status(401).json({
         error: "Invalid token. User not found.",
       });
-
-      //Attach user to request object
-      req.user = user;
-      next();
     }
+    //Attach user to request object
+    req.user = user;
+    next();
   } catch (error) {
     return res.status(401).json({
       error: "Invalid or expired token.",
