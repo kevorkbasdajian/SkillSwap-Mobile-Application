@@ -1,5 +1,6 @@
 /*This controller is used to Get default skills, Create new skills, Subsribe
-to selected skills, and Retrieve user-subscribed skills.
+to selected skills, and Retrieve user-subscribed skills.Moreover, it gets user skills by role, 
+toggles skill as favorite/unfavorite, and searches skills by user role.
 */
 const skillService = require("../services/skillService");
 
@@ -72,6 +73,81 @@ const skillController = {
       next(error);
     }
   },
+
+  //Get user skills by role (teacher or learner)
+  getUserSkillsByRole: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { role } = req.params;
+      if (!["teacher", "learner"].includes(role)) {
+        return res.status(400).json({
+          error: "Role must be either teacher or learner",
+        });
+      }
+      const skills = await skillService.getUserSkillsByRole(userId, role);
+      res.status(200).json({
+        success: true,
+        role,
+        message: "Skills retrieved successfully",
+        data: skills,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Toggle favorite status
+  toggleFavorite: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { userSkillId } = req.params;
+
+      const updatedSkill = await skillService.toggleFavorite(
+        userId,
+        userSkillId,
+      );
+
+      res.status(200).json({
+        success: true,
+        message: `Skill : ${updatedSkill.is_favorite ? "added to" : "removed from"} favorites`,
+        data: updatedSkill,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Search user skills
+  searchUserSkills: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { role } = req.params;
+      const { q } = req.query;
+      if (!q || q.trim().length === 0) {
+        return res.status(400).json({
+          error: "Search query is required",
+        });
+      }
+      if (!["teacher", "learner"].includes(role)) {
+        return res.status(400).json({
+          error: "Role must be either teacher or learner",
+        });
+      }
+      const skills = await skillService.searchUserSkills(
+        userId,
+        role,
+        q.trim(),
+      );
+      res.status(200).json({
+        success: true,
+        message: `${skills.length > 0 ? "Skills searched successfully" : "No skills matched to search query"}`,
+        query: q,
+        data: skills,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = skillController;
 
@@ -82,4 +158,7 @@ with is_default column having a false value.
 3-addUserSkill gtes the userId from the req.user.id after authentication check is done, gets the 
 skills selected, and adds them to the user's profile.
 4-getUserSkills gets the user's id and retrieves the user subscribed skills.
+5-getUserSkillsByRole: Select user skills by role.
+6-toggleFavorite: Toggle a user skill as favorite or not.
+7-searchUserSkills: Search user skills by name.
 */

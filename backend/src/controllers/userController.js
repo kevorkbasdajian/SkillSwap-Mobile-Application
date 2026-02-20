@@ -1,4 +1,7 @@
-//This controller is to handle the requests of getting a user profile and updating a profile.
+/*This controller is to handle the requests of getting a user profile and updating a profile. Furthermore
+ the controller searches users, manipulates recent searches( adds, removes, clears, fetches) and handles the profile
+ view of a user.*/
+const userSearchService = require("../services/userSearchService");
 const userService = require("../services/userService");
 
 const userController = {
@@ -33,6 +36,97 @@ const userController = {
       next(error);
     }
   },
+  //Search users
+  searchUsers: async (req, res, next) => {
+    try {
+      const { q } = req.query;
+      if (!q || q.trim().length === 0) {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+      const users = await userSearchService.searchUsers(req.user.id, q.trim());
+      res.status(200).json({
+        success: true,
+        message: "Users searched successfully",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Get recent searches of a user
+  getRecentSearches: async (req, res, next) => {
+    try {
+      const searches = await userSearchService.getRecentSearches(req.user.id);
+      return res.status(200).json({
+        success: true,
+        message: "Recent searches retrieved successfully",
+        data: searches,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Save recent search
+  saveRecentSearch: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const data = await userSearchService.saveRecentSearch(
+        req.user.id,
+        userId,
+      );
+      res.status(200).json({
+        success: true,
+        message: "Recent search saved",
+        data: data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Remove one recent search
+  removeRecentSearch: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      await userSearchService.removeRecentSearch(req.user.id, userId);
+      res.status(200).json({
+        success: true,
+        message: "Recent search removed",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Clear all recent searches
+  clearRecentSearches: async (req, res, next) => {
+    try {
+      await userSearchService.clearRecentSearches(req.user.id);
+      res.status(200).json({
+        success: true,
+        message: "Recent searches cleared",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  //Get another user's public profile
+  getPublicProfile: async (req, res, next) => {
+    try {
+      const { userId } = req.params;
+      const profile = await userService.getPublicProfile(req.user.id, userId);
+      return res.status(200).json({
+        success: true,
+        message: `Public profile of user: ${profile.full_name} fetched successfully`,
+        data: profile,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = userController;
 
@@ -41,5 +135,11 @@ module.exports = userController;
 fetch the profile of the user.
 2- The second part of the controller sends the id and the data that will be used
 to update the profile of a user.
+3- searchUsers: search a user.
+4- getRecentSearches: get the recent searches of a user.
+5- saveRecentSearch: saves the search of a user once clicked on it
+6- removeRecentSearch: remove a user's one recent search.
+7- clearRecentSearches: Clear a user's recent searches.
+8-getPublicProfile: Get another user's public profile.
 
 */

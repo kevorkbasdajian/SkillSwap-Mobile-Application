@@ -1,5 +1,5 @@
 /* This file is to validate data being sent by forms during register,
-login, or completion of profile */
+login, and completion of profile */
 const Joi = require("joi");
 
 //This schema is for registration

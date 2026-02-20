@@ -1,4 +1,4 @@
-// This file is to get user profile and update it
+// This file is to get user profile and update it.
 const supabase = require("../config/database");
 
 const userService = {
@@ -45,6 +45,80 @@ const userService = {
     }
     return updatedUser;
   },
+
+  //Get another user's public profile
+  getPublicProfile: async (currentUserId, targetUserId) => {
+    const { data: user, error } = await supabase
+      .from("users")
+      .select("id, full_name, nick_name, profile_image_url,biography")
+      .eq("id", targetUserId)
+      .single();
+    if (error || !user) {
+      throw new Error("User not found");
+    }
+
+    //Get teaching count
+    const { count: teachingCount } = await supabase
+      .from("user_skills")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", targetUserId)
+      .eq("role", "teacher");
+
+    //Get learning count
+    const { count: learningCount } = await supabase
+      .from("user_skills")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", targetUserId)
+      .eq("role", "learner");
+
+    //Get friends count
+    const { count: friendsCount } = await supabase
+      .from("friends")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${targetUserId},addresse_id.eq.${targetUserId}`);
+
+    // Get friendship status with current user
+    const { data: friendship } = await supabase
+      .from("friends")
+      .select("id,status,requester_id")
+      .or(
+        `and(requester_id.eq.${currentUserId},addressee_id.eq${targetUserId}),` +
+          `and(requester_id.eq.${targetUserId},addressee_id.eq.${currentUserId})`,
+      )
+      .single();
+    //Determine friend button state
+    let friendshipStatus = "none";
+    if (friendship) {
+      if (friendship.status === "accepted") {
+        friendshipStatus = "friends";
+      } else if (friendship.status === "pending") {
+        friendshipStatus =
+          friendship.requester_id === currentUserId
+            ? "pending_sent"
+            : "pending_received";
+      }
+    }
+
+    //Get user skills (both roles) with skill name and icon
+    const { data: skills } = await supabase
+      .from("user_skills")
+      .select(`id,role,proficiency_level,skills(id , name, icon_url)`)
+      .eq("user_id", targetUserId);
+    return {
+      ...user,
+      status: {
+        teaching: teachingCount || 0,
+        learning: learningCount || 0,
+        friends: friendsCount || 0,
+      },
+      friendshipStatus,
+      skills: {
+        teaching: skills.filter((s) => s.role === "teacher"),
+        learning: skills.filter((s) => s.role === "learner"),
+      },
+    };
+  },
 };
 module.exports = userService;
 
@@ -52,5 +126,9 @@ module.exports = userService;
 1-the first service is to get a user profile by id.
 2- the second service is to update a user profile, by only allowing to change 
 certain attributes of a user.
+3-getPublicProfile: This function at first fetches the user's profile data like full_name
+nick_name, etc. Then, the function fetches the # of teaching, learning, and friends count.
+Then, the function fetches the target user's connection with the current one to determine the state of the
+button. Then the function returns the skills of the users and sorts the data out in the return response.
 
 */

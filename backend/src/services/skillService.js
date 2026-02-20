@@ -1,5 +1,7 @@
 /*This file is to first select all default skills. The file also creates a new skill,
-adds the skills to a user's file, and also selects the skills to which a user is subscribed
+adds the skills to a user's profile, and also selects the skills to which a user is subscribed. Moreover,
+the file also gets skills by role, updates a skill as favorite or not, and searches and returns skills
+matching to a keyword
 */
 const supabase = require("../config/database");
 const { uploadToSupabase } = require("../utils/supabaseUpload");
@@ -99,6 +101,80 @@ const skillService = {
 
     return userSkills;
   },
+
+  //Get user skills filtered by role
+  getUserSkillsByRole: async (userId, role) => {
+    const { data: userSkills, error } = await supabase
+      .from("user_skills")
+      .select(
+        "id,role,proficiency_level,is_favorite, skills (id,name,icon_url)",
+      )
+      .eq("user_id", userId)
+      .eq("role", role)
+      .order("is_favorite", { ascending: false }); // Favorites appear first
+    if (error) {
+      throw new Error(`Failed to fetch skills: ${error.message}`);
+    }
+
+    return userSkills;
+  },
+
+  //Toggle favorite status of a user skill
+  toggleFavorite: async (userId, userSkillId) => {
+    const { data: userSkill, error: fetchError } = await supabase
+      .from("user_skills")
+      .select("id,is_favorite")
+      .eq("id", userSkillId)
+      .eq("user_id", userId)
+      .single();
+    if (fetchError || !userSkill) {
+      throw new Error("Skill not found or access denied");
+    }
+
+    //Toggle the value
+    const { data: updatedSkill, error: updateError } = await supabase
+      .from("user_skills")
+      .update({ is_favorite: !userSkill.is_favorite })
+      .eq("id", userSkillId)
+      .select(
+        `
+      id,
+      role,
+      proficiency_level,
+      is_favorite,
+      skills (id, name, icon_url)
+    `,
+      )
+      .single();
+    if (updateError) {
+      throw new Error(`Failed to update favorite: ${updateError.message}`);
+    }
+    return updatedSkill;
+  },
+
+  //Search user skills by name within a role
+  searchUserSkills: async (userId, role, searchQuery) => {
+    const { data: userSkills, error } = await supabase
+      .from("user_skills")
+      .select(
+        `
+      id,
+      role,
+      proficiency_level,
+      is_favorite,
+      skills!inner (id, name, icon_url)
+    `,
+      )
+      .eq("user_id", userId)
+      .eq("role", role)
+      .ilike("skills.name", `%${searchQuery}%`)
+      .order("is_favorite", { ascending: false });
+
+    if (error) {
+      throw new Error(`Search Failed: ${error.message}`);
+    }
+    return userSkills;
+  },
 };
 module.exports = skillService;
 
@@ -109,4 +185,7 @@ same name.
 3-addUserSkills subscribes a user to the selected skills. Adds a random proficiency level to those
 that are default, and keeps the custom-created one's null.
 4-getUserSkills selects and retrieves all of a user's subscribed skills.
+5-getUserSkillsByRole: Select user skills by role.
+6-toggleFavorite: Toggle a user skill as favorite or not.
+7-searchUserSkills: Search user skills by name.
 */

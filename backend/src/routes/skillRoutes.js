@@ -26,6 +26,15 @@ router.post("/user", skillController.addUserSkills);
 // GET /api/skills/user - Get user's skills
 router.get("/user", skillController.getUserSkills);
 
+//GET /api/skills/user/:role - Get user skills by role
+router.get("/user/:role", skillController.getUserSkillsByRole);
+
+//PATCH /api/skills/user/:userSkillId/favorite - Toggle favorite
+router.patch("/user/:userSkillId/favorite", skillController.toggleFavorite);
+
+//GET /api/skills/user/:role/search - Search user skills
+router.get("/user/:role/search", skillController.searchUserSkills);
+
 module.exports = router;
 
 /*
