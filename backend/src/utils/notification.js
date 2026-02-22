@@ -62,3 +62,4 @@ const createNotification = async (notificationData) => {
     throw error;
   }
 };
+module.exports = { createNotification };

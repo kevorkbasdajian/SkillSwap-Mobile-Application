@@ -3,7 +3,7 @@
 const http = require("http");
 const app = require("./app");
 const config = require("./config/env");
-const { initializeSocket } = require("./config/socket");
+const { initializeSOcket } = require("./config/socket");
 
 const PORT = config.port;
 
@@ -11,14 +11,14 @@ const PORT = config.port;
 const server = http.createServer(app);
 
 //Initialize Socket.io
-const io = initializeSocket(server);
+const io = initializeSOcket(server);
 
 // Start server
 server.listen(PORT, () => {
   console.log(`SkillSwap API running on port ${PORT}`);
   console.log(`Environment : ${config.env}`);
   console.log(`Health check: http://localhost:${PORT}/health`);
-  console.log(`Socket.io initialized`);
+  console.log(`🚀 Socket.io initialized\n\n`);
 });
 app.listen(PORT, () => {
   console.log(`SkillSwap API running on port ${PORT}`);
