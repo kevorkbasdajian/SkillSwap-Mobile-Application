@@ -60,11 +60,32 @@ const createSKillSchema = Joi.object({
   // Note: icon/image will be handled by multer middleware for file upload
 });
 
+//This schema is for forgot password
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+});
+
+// This schema is for reset Password
+const resetPasswordSchema = Joi.object({
+  token: Joi.string().required().messages({
+    "any.required": "Reset token is required",
+  }),
+  password: Joi.string().min(8).messages({
+    "string.min": "Password must be at least 8 characters long",
+    "any.required": "Password is required",
+  }),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
   loginSchema,
   createSKillSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 };
 
 /*

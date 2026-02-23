@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket.io Test Client</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 50px auto;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .connected {
+        background: #d4edda;
+        color: #155724;
+      }
+      .disconnected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .notification {
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .notification-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .notification-time {
+        font-size: 12px;
+        color: #666;
+      }
+      #notifications {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔌 SkillSwap Socket.io Test Client</h1>
+
+      <div>
+        <h3>Step 1: Enter Your JWT Token</h3>
+        <input
+          type="text"
+          id="token"
+          placeholder="Paste your JWT token here (from login response)"
+        />
+        <button onclick="connect()">Connect to Socket.io</button>
+        <button onclick="disconnect()">Disconnect</button>
+      </div>
+
+      <div id="status" class="status disconnected">❌ Disconnected</div>
+
+      <div>
+        <h3>Real-time Notifications</h3>
+        <div id="notifications">
+          <p style="color: #999">Waiting for notifications...</p>
+        </div>
+      </div>
+
+      <div>
+        <h3>Debug Info</h3>
+        <div
+          id="debug"
+          style="
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+          "
+        >
+          No events yet
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let socket = null;
+      const serverUrl = "http://localhost:5000";
+
+      function connect() {
+        const token = document.getElementById("token").value.trim();
+
+        if (!token) {
+          alert("Please enter your JWT token");
+          return;
+        }
+
+        // Disconnect existing connection
+        if (socket) {
+          socket.disconnect();
+        }
+
+        // Connect with authentication
+        socket = io(serverUrl, {
+          auth: {
+            token: token,
+          },
+        });
+
+        // Connection successful
+        socket.on("connect", () => {
+          console.log("✅ Connected to Socket.io");
+          updateStatus("connected", "✅ Connected");
+          addDebug("Connected with socket ID: " + socket.id);
+        });
+
+        // Connection error
+        socket.on("connect_error", (error) => {
+          console.error("❌ Connection error:", error.message);
+          updateStatus("disconnected", "❌ Connection Error: " + error.message);
+          addDebug("Connection error: " + error.message);
+        });
+
+        // Disconnection
+        socket.on("disconnect", (reason) => {
+          console.log("❌ Disconnected:", reason);
+          updateStatus("disconnected", "❌ Disconnected: " + reason);
+          addDebug("Disconnected: " + reason);
+        });
+
+        // Listen for notifications
+        socket.on("notification", (data) => {
+          console.log("🔔 Notification received:", data);
+          addNotification(data);
+          addDebug("Notification received: " + JSON.stringify(data, null, 2));
+        });
+      }
+
+      function disconnect() {
+        if (socket) {
+          socket.disconnect();
+          socket = null;
+        }
+      }
+
+      function updateStatus(className, text) {
+        const statusDiv = document.getElementById("status");
+        statusDiv.className = "status " + className;
+        statusDiv.textContent = text;
+      }
+
+      function addNotification(data) {
+        const container = document.getElementById("notifications");
+
+        // Clear "waiting" message
+        if (container.querySelector("p")) {
+          container.innerHTML = "";
+        }
+
+        const notif = document.createElement("div");
+        notif.className = "notification";
+
+        const notification = data.data.notifications;
+
+        notif.innerHTML = `
+        <div class="notification-title">${notification.title}</div>
+        <div>${notification.message}</div>
+        <div class="notification-time">${new Date().toLocaleTimeString()}</div>
+      `;
+
+        container.insertBefore(notif, container.firstChild);
+      }
+
+      function addDebug(message) {
+        const debugDiv = document.getElementById("debug");
+        const timestamp = new Date().toLocaleTimeString();
+        debugDiv.innerHTML =
+          `[${timestamp}] ${message}<br>` + debugDiv.innerHTML;
+      }
+    </script>
+  </body>
+</html>
