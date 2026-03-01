@@ -1,4 +1,5 @@
 // This file is to get user profile and update it.
+const { map } = require("../app");
 const supabase = require("../config/database");
 
 const userService = {
@@ -76,7 +77,36 @@ const userService = {
       .from("friends")
       .select("*", { count: "exact", head: true })
       .eq("status", "accepted")
-      .or(`requester_id.eq.${targetUserId},addresse_id.eq.${targetUserId}`);
+      .or(`requester_id.eq.${targetUserId},addressee_id.eq.${targetUserId}`);
+
+    // Get friends information of the targetted user
+    const { data: user_friends } = await supabase
+      .from("friends")
+      .select(
+        `
+    id,
+    status,
+    requester:users!friends_requester_id_fkey (
+      id,
+      full_name,
+      nick_name,
+      profile_image_url
+    ),
+    addressee:users!friends_addressee_id_fkey (
+      id,
+      full_name,
+      nick_name,
+      profile_image_url
+    )
+  `,
+      )
+      .or(`requester_id.eq.${targetUserId},addressee_id.eq.${targetUserId}`)
+      .eq("status", "accepted");
+
+    //Format the information to only include the info of the user's friends
+    const formatted = user_friends.map((row) => {
+      return row.requester.id === targetUserId ? row.addressee : row.requester;
+    });
 
     // Get friendship status with current user
     const { data: friendship } = await supabase
@@ -117,6 +147,7 @@ const userService = {
         teaching: skills.filter((s) => s.role === "teacher"),
         learning: skills.filter((s) => s.role === "learner"),
       },
+      friends: formatted,
     };
   },
 };

@@ -11,6 +11,7 @@ const userRoutes = require("./routes/userRoutes");
 const skillRoutes = require("./routes/skillRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const groupRoutes = require("./routes/groupRoutes");
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/skills", skillRoutes);
 app.use("/api/friends", friendRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/groups", groupRoutes);
 
 //Health check endpoint
 app.get("/health", (req, res) => {

@@ -20,13 +20,13 @@ server.listen(PORT, () => {
   console.log(`Health check: http://localhost:${PORT}/health`);
   console.log(`🚀 Socket.io initialized\n\n`);
 });
-app.listen(PORT, () => {
-  console.log(`SkillSwap API running on port ${PORT}`);
-  console.log(`Environment: ${config.env}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
-});
+// app.listen(PORT, () => {
+//   console.log(`SkillSwap API running on port ${PORT}`);
+//   console.log(`Environment: ${config.env}`);
+//   console.log(`Health check: http://localhost:${PORT}/health`);
+// });
 
-/*
+/*if i remove app.
  We import the app and set it to listen at the port specified in the .env file
  We create a backend server and initialize the socket.io on it.
 */

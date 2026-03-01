@@ -79,6 +79,53 @@ const resetPasswordSchema = Joi.object({
   }),
 });
 
+// Thgis schema is for creating a group
+const createGroupSchema = Joi.object({
+  name: Joi.string().min(3).max(255).required().messages({
+    "string.min": "Group name must be at least 3 characters",
+    "string.max": "Group name cannot exceed 255 characters",
+    "any.required": "Group name is required",
+  }),
+  description: Joi.string().min(10).required().messages({
+    "string.min": "Description must be at least 10 characters",
+    "any.required": "Description is required",
+  }),
+  skill_id: Joi.string().uuid().required().messages({
+    "string.guid": "Invalid skill ID format",
+    "any.required": "Skill ID is required",
+  }),
+  difficulty_level: Joi.string()
+    .valid("beginner", "intermediate", "advanced")
+    .required()
+    .messages({
+      "any.only": "Difficult must be beginner, intermediate, or advanced.",
+      "any.required": "Difficult is required",
+    }),
+  visibility: Joi.string()
+    .valid("public", "private")
+    .default("private")
+    .messages({
+      "any.only": "Visibility must be public or private.",
+    }),
+  max_participants: Joi.number().integer().min(2).max(50).required().messages({
+    "number.min": "Group must allow at least 2 participants",
+    "number.max": "Group cannot exceed 50 participants",
+    "any.required": "Maximum participants is required",
+  }),
+});
+
+//This schema is to update group information
+const updateGroupSchema = Joi.object({
+  name: Joi.string().min(3).max(255).optional(),
+  description: Joi.string().min(10).optional(),
+  difficulty_level: Joi.string()
+    .valid("beginner", "intermediate", "advanced")
+    .optional(),
+  visibility: Joi.string().valid("public", "private").optional(),
+  max_participants: Joi.number().integer().min(2).max(50).optional(),
+  status: Joi.string().valid("active", "inactive").optional(),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
@@ -86,6 +133,8 @@ module.exports = {
   createSKillSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  createGroupSchema,
+  updateGroupSchema,
 };
 
 /*
