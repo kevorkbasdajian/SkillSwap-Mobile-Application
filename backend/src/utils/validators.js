@@ -140,6 +140,61 @@ const notificationSchema = Joi.object({
   }),
 });
 
+// This schema is to validate Session data
+const createSessionSchema = Joi.object({
+  title: Joi.string().min(3).max(255).required().messages({
+    "string.min": "Session title must be at least 3 characters",
+    "string.max": "Session title cannot exceed 255 characters",
+    "any.required": "Session title is required",
+  }),
+  description: Joi.string().min(10).required().messages({
+    "string.min": "Description must be at least 10 characters",
+    "any.required": "Description is required",
+  }),
+  session_type: Joi.string()
+    .valid("meeting", "review", "practice", "problem_solving")
+    .default("meeting")
+    .messages({
+      "any.only":
+        "Session type must be meeting, review, practice, or problem_solving",
+    }),
+  scheduled_date: Joi.date().iso().min("now").required().messages({
+    "date.min": "Session date must be in the future",
+    "any.required": "Scheduled date is required",
+  }),
+  start_time: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Start time must be in HH:MM format (e.g., 14:30)",
+      "any.required": "Start time is required",
+    }),
+  end_time: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .required()
+    .messages({
+      "string.pattern.base": "End time must be in HH:MM format (e.g., 16:30)",
+      "any.required": "End time is required",
+    }),
+});
+
+//This schema is to update a Session
+const updateSessionSchema = Joi.object({
+  title: Joi.string().min(3).max(255).optional(),
+  description: Joi.string().min(10).optional(),
+  session_type: Joi.string()
+    .valid("meeting", "review", "practice", "solving problems")
+    .optional(),
+  scheduled_date: Joi.date().iso().min("now").optional(),
+  start_time: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+  end_time: Joi.string()
+    .pattern(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+    .optional(),
+  status: Joi.string().valid("scheduled", "completed", "cancelled").optional(),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
@@ -150,6 +205,8 @@ module.exports = {
   createGroupSchema,
   updateGroupSchema,
   notificationSchema,
+  createSessionSchema,
+  updateSessionSchema,
 };
 
 /*
