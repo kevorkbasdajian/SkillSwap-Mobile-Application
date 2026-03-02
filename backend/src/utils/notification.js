@@ -25,12 +25,22 @@ const createNotification = async (notificationData) => {
       throw new Error(`Failed to create notification: ${notiError.message}`);
     }
 
+    // Ensure recipients is array
+    const recipients = Array.isArray(recipient_id)
+      ? recipient_id
+      : [recipient_id];
+
+    // Create multiple user_notifications
+    const userNotifications = recipients.map((r) => ({
+      notification_id: notification.id,
+      recipient_id: r,
+      is_read: false,
+    }));
+
     //Link notification to recipient
     const { data: userNotification, error: userNotifError } = await supabase
       .from("user_notifications")
-      .insert([
-        { notification_id: notification.id, recipient_id, is_read: false },
-      ])
+      .insert(userNotifications)
       .select(
         `id,
         is_read,
@@ -45,17 +55,19 @@ const createNotification = async (notificationData) => {
           created_at
         )
       `,
-      )
-      .single();
+      );
     if (userNotifError) {
       throw new Error(`Failed to link notification: ${userNotifError.message}`);
     }
 
     //Emit real-time notification via Socket.io
     const io = getIO();
-    io.to(`user:${recipient_id}`).emit("notification", {
-      type: "new_notification",
-      data: userNotification,
+
+    recipients.forEach((r) => {
+      io.to(`user:${r}`).emit("notification", {
+        type: "new_notification",
+        data: userNotification,
+      });
     });
   } catch (error) {
     console.error("Notification error:", error);

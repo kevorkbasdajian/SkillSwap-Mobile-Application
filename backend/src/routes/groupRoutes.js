@@ -3,7 +3,11 @@ const router = express.Router();
 const groupController = require("../controllers/groupController");
 const authenticate = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
-const { createGroupSchema, updateGroupSchema } = require("../utils/validators");
+const {
+  createGroupSchema,
+  updateGroupSchema,
+  notificationSchema,
+} = require("../utils/validators");
 const upload = require("../utils/fileUpload");
 
 // All routes require authentication
@@ -32,7 +36,7 @@ router.post(
 //Get a user's groups by role
 router.get("/my-groups/:role", groupController.getMyGroups);
 
-//Get a groups members
+//Get a group's members
 router.get("/:groupId/members", groupController.getGroupMembers);
 
 // Get list of friends of the teacher who are qualified to be invited
@@ -58,6 +62,13 @@ router.delete("/:groupId", groupController.deleteGroup);
 
 // Join a group
 router.post("/:groupId/join", groupController.joinGroup);
+
+// Send notification to group members (teacher only)
+router.post(
+  "/:groupId/send",
+  validate(notificationSchema),
+  groupController.sendNotidicationToMembers,
+);
 
 //Approve a request (teacher only)
 router.patch(

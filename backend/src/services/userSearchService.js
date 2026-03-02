@@ -14,7 +14,6 @@ const userSearchService = {
     if (error) {
       throw new Error(`Search Failed: ${error.message}`);
     }
-    console.log("Data is", users);
     return users;
   },
   //Get recent searches of a user

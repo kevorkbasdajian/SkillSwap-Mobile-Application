@@ -314,5 +314,25 @@ const groupController = {
       next(error);
     }
   },
+  // Send notification to group members (teacher only)
+  sendNotidicationToMembers: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+      const data = req.validatedData;
+
+      const message = await groupService.sendNotidicationToMembers(
+        userId,
+        groupId,
+        data,
+      );
+      res.status(200).json({
+        success: true,
+        message: message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = groupController;

@@ -39,7 +39,6 @@ const notificationService = {
   // History of Sent Notifications for the teacher
   getNotificationHistory: async (userId, groupId) => {
     //Check that the user is the owner of the group
-    console.log("Group id", groupId);
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .select("id, creator_id")

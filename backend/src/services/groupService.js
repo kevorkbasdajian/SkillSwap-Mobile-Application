@@ -12,7 +12,7 @@ const mapProficiencyToDifficulties = (proficiency) => {
   if (proficiencyNum <= 2) {
     return ["beginner", "intermediate"];
   } else if (proficiencyNum === 3) {
-    return ["beginnner", "intermediate", "advanced"];
+    return ["beginner", "intermediate", "advanced"];
   } else {
     return ["intermediate", "advanced"];
   }
@@ -201,7 +201,6 @@ const groupService = {
 
   //Get group details (preview page)
   getGroupDetails: async (groupId, userId) => {
-    console.log("Group ID is ", groupId);
     const { data: group, error } = await supabase
       .from("groups")
       .select(
@@ -713,6 +712,52 @@ const groupService = {
     }
     return searchedUsers;
   },
+
+  //Send notification to group members
+  sendNotidicationToMembers: async (userId, groupId, data) => {
+    //Check that the user is the owner of the group
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("id, creator_id, difficulty, skill:skills(id)")
+      .eq("id", groupId)
+      .single();
+
+    if (groupError || !group) {
+      throw new Error("Group not found");
+    }
+
+    if (group.creator_id !== userId) {
+      throw new Error(
+        "Only the group creator can send notifications to group members",
+      );
+    }
+    //Collect the id's of the group_members of the group
+    const { data: groupMemberIds, error } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .eq("has_joined", true)
+      .eq("group_id", groupId)
+      .eq("role", "learner");
+    if (error) {
+      throw new Error(`Failed to select group members: ${error.message}`);
+    }
+    if (groupMemberIds.length === 0) {
+      return { message: "No group members exist." };
+    }
+    const recipients = groupMemberIds.map((m) => m.user_id);
+    const title = data.title;
+    const message = data.message;
+    await createNotification({
+      related_entity_type: "Group General",
+      related_entity_id: groupId,
+      sender_id: userId,
+      recipient_id: recipients,
+      title: title,
+      message: message,
+    });
+
+    return { message: "Notifications sent successfully to the group members" };
+  },
 };
 module.exports = groupService;
 
@@ -740,4 +785,5 @@ table.
 15-getFriendsWithInterest: This service fetches a list of users who are friends with the creator of the group (teacher), who have assigned to themselves the same skill as the one of the group, and with
 proficiency_level similar to the group difficulty.
 16-searchPossibleMembers: Retrieves the teacher's list of friends who are not members but have an interest and can become members, and applies a search query on them.
+17-sendNotidicationToMembers: This service sends individual notifications to the group members of a group.
 */

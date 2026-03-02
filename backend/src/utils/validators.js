@@ -126,6 +126,20 @@ const updateGroupSchema = Joi.object({
   status: Joi.string().valid("active", "inactive").optional(),
 });
 
+// This schema is to validate Notification data
+const notificationSchema = Joi.object({
+  title: Joi.string().min(3).max(100).required().messages({
+    "string.min": "Title should be at least 3 characters",
+    "string.max": "Title Cannot exceed 100 characters",
+    "any.required": "Title is required",
+  }),
+  message: Joi.string().min(3).max(255).required().messages({
+    "string.min": "Message should be at least 3 characters",
+    "string.max": "Message Cannot exceed 255 characters",
+    "any.required": "Message is required",
+  }),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
@@ -135,6 +149,7 @@ module.exports = {
   resetPasswordSchema,
   createGroupSchema,
   updateGroupSchema,
+  notificationSchema,
 };
 
 /*
