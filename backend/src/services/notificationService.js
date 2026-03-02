@@ -36,6 +36,46 @@ const notificationService = {
     return notifications;
   },
 
+  // History of Sent Notifications for the teacher
+  getNotificationHistory: async (userId, groupId) => {
+    //Check that the user is the owner of the group
+    console.log("Group id", groupId);
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("id, creator_id")
+      .eq("id", groupId)
+      .single();
+
+    if (groupError || !group) {
+      throw new Error("Group not found");
+    }
+
+    if (group.creator_id !== userId) {
+      throw new Error(
+        "Only the group creator can view the history of notifications sent",
+      );
+    }
+
+    //Retrieve notification history
+    const { data: notification_history, error } = await supabase
+      .from("notifications")
+      .select("id,title,message,created_at")
+      .eq("sender_id", userId)
+      .eq("related_entity_id", groupId)
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      throw new Error(
+        `Failed to retrieve Notification History: ${error.message}`,
+      );
+    }
+    if (notification_history.length === 0) {
+      return { message: "No notifications sent." };
+    }
+
+    return notification_history;
+  },
+
   // Mark notification as read
   markAsRead: async (userId, userNotificationId) => {
     const { data, error } = await supabase
@@ -106,4 +146,5 @@ module.exports = notificationService;
 3- markAllAsRead: This service marks all of the notifications of a user as read.
 4- deleteNotification: This service deletes a specific chosen notification.
 5- getUnreadCount: This service calculates the number of unread notifications of a user.
+6-getNotificationHistory: This service retrieves the history of sent notifications of a teacher.
 */

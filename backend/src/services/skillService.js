@@ -54,7 +54,6 @@ const skillService = {
   // Add selected skills to User's skills
   addUserSkills: async (userId, skills) => {
     //Generate random proficiency level (1-5)
-    console.log("ayo", skills);
     const userSkillsData = skills.map((skill) => ({
       user_id: userId,
       skill_id: skill.skill_id,

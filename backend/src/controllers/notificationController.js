@@ -18,6 +18,26 @@ const notificationController = {
     }
   },
 
+  // Get Teacher's notification history
+  getNotificationHistory: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+
+      const response = await notificationService.getNotificationHistory(
+        userId,
+        groupId,
+      );
+      res.status(200).json({
+        success: true,
+        message: "Notification history of teacher retrieved successfully",
+        data: response,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Mark as read
   markAsRead: async (req, res, next) => {
     try {

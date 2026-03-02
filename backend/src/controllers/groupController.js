@@ -232,5 +232,87 @@ const groupController = {
       next(error);
     }
   },
+
+  //Remove group member
+  removeGroupMember: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { memberId, groupId } = req.params;
+
+      const message = await groupService.removeGroupMember(
+        userId,
+        memberId,
+        groupId,
+      );
+
+      res.status(200).json({
+        success: true,
+        message: message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Get group members
+  getGroupMembers: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+
+      const response = await groupService.getGroupMembers(userId, groupId);
+      res.status(200).json({
+        success: true,
+        message: "Participants retrieved successfully",
+        data: response,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Get a list of friends of the teacher who have an interest in the skill with proficiency_level similar to the difficulty value of the group
+  getFriendsWithInterest: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+
+      const lisOfFriends = await groupService.getFriendsWithInterest(
+        userId,
+        groupId,
+      );
+
+      res.status(200).json({
+        success: true,
+        message:
+          "Successfully retrieved List of friends with possible interest.",
+        data: lisOfFriends,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Search Among teacher's friends with interest
+  searchPossibleMembers: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { q } = req.query;
+      if (!q || q.trim().length === 0) {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+      const { groupId } = req.params;
+
+      const list = await groupService.searchPossibleMembers(userId, groupId, q);
+
+      res.status(200).json({
+        success: true,
+        messsage: "User's searched successfully",
+        data: list,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = groupController;

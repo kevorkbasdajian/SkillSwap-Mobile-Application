@@ -6,6 +6,12 @@ const authenticate = require("../middlewares/auth");
 // All routes require authentication
 router.use(authenticate);
 
+// GET /api/notificationHistory - History of teacher's notifications
+router.get(
+  "/:groupId/notification-history",
+  notificationController.getNotificationHistory,
+);
+
 // GET /api/notifications - Get all notifications
 router.get("/", notificationController.getUserNotifications);
 

@@ -4,6 +4,7 @@
 const supabase = require("../config/database");
 const { uploadToSupabase } = require("../utils/supabaseUpload");
 const { createNotification } = require("../utils/notification");
+const friendService = require("./friendService");
 
 //Helper : Map proficiency to difficulty levels
 const mapProficiencyToDifficulties = (proficiency) => {
@@ -35,6 +36,7 @@ const groupService = {
       .select("id")
       .eq("user_id", userId)
       .eq("skill_id", skill_id)
+      .eq("role", "teacher")
       .single();
     if (skillError || !userSkill) {
       throw new Error(
@@ -561,6 +563,156 @@ const groupService = {
 
     return userSkill;
   },
+  removeGroupMember: async (userId, memberId, groupId) => {
+    //Check that the user is the owner of the group
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("id, creator_id")
+      .eq("id", groupId)
+      .single();
+
+    if (groupError || !group) {
+      throw new Error("Group not found");
+    }
+
+    if (group.creator_id !== userId) {
+      throw new Error("Only the group creator can remove a member");
+    }
+
+    // Check that the member is in the group
+    const { data: member, error } = await supabase
+      .from("group_members")
+      .select(`id,user_id,role,has_joined, group:groups(name)`)
+      .eq("id", memberId)
+      .eq("has_joined", true)
+      .eq("group_id", groupId)
+      .single();
+    if (error || !member) {
+      throw new Error(`The user is not a member of the group`);
+    }
+    // Remove the member
+    const { error: deleteError } = await supabase
+      .from("group_members")
+      .delete()
+      .eq("id", memberId)
+      .eq("group_id", groupId);
+    if (deleteError) {
+      throw new Error(`Could not remove the member: ${deleteError.message}`);
+    }
+
+    return {
+      message: `Member successfully removed from the group: ${member.group.name} `,
+    };
+  },
+  getGroupMembers: async (userId, groupId) => {
+    //Check that the user is the owner of the group
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("id, creator_id")
+      .eq("id", groupId)
+      .single();
+
+    if (groupError || !group) {
+      throw new Error("Group not found");
+    }
+
+    if (group.creator_id !== userId) {
+      throw new Error("Only the group creator can retrieve the members");
+    }
+
+    // Get a list of the group_members
+    const { data: groupMembers, error } = await supabase
+      .from("group_members")
+      .select(`id, user:users(full_name, nick_name, profile_image_url) `)
+      .eq("has_joined", true)
+      .eq("group_id", groupId)
+      .eq("role", "learner");
+    if (error) {
+      throw new Error(
+        `Could not retrieve group participants: ${error.message}`,
+      );
+    }
+    if (groupMembers.length === 0) {
+      return { message: "The group has no participants." };
+    }
+    const users = groupMembers.map((m) => m.user);
+    return users;
+  },
+  getFriendsWithInterest: async (userId, groupId) => {
+    //Check that the user is the owner of the group
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select("id, creator_id, difficulty, skill:skills(id)")
+      .eq("id", groupId)
+      .single();
+
+    if (groupError || !group) {
+      throw new Error("Group not found");
+    }
+
+    if (group.creator_id !== userId) {
+      throw new Error(
+        "Only the group creator can get a list of friends with interest",
+      );
+    }
+
+    //Get List of friends
+    const { data: friendsWithInterest, error } = await supabase
+      .from("user_skills")
+      .select(
+        "id, user:users!user_id(id,full_name,nick_name,profile_image_url),role,skill_id, proficiency_level",
+      )
+      .eq("skill_id", group.skill.id)
+      .eq("role", "learner");
+
+    if (error) {
+      throw new Error(
+        `Failed to retrieve the list of friends: ${error.message}`,
+      );
+    }
+    if (friendsWithInterest.length === 0) {
+      return {
+        message: "You have no friends who have an interest in this skill",
+      };
+    }
+
+    // Get the user's friends
+    const friends = await friendService.getAllFriends(userId);
+    const friendIds = friends.map((f) => f.friend.id);
+
+    //Filter out to keep only those who are the user's friends
+    const finalFriendsWithInterest = friendsWithInterest.filter((f) =>
+      friendIds.includes(f.user.id),
+    );
+
+    //Change the proficiency_level to difficulty (from number to text)
+    const enriched = finalFriendsWithInterest.map((f) => ({
+      ...f,
+      difficulty: mapProficiencyToDifficulties(f.proficiency_level),
+    }));
+
+    // Final filtering to include friends with the desired difficulty
+    return enriched.filter((f) => f.difficulty.includes(group.difficulty));
+  },
+
+  //Search among the list of teacher's friends who have an interest in the skill and can become members
+  searchPossibleMembers: async (userId, groupId, q) => {
+    const list = await groupService.getFriendsWithInterest(userId, groupId);
+
+    //Search users by full_name or nick_name
+    const searchedUsers = list.filter((u) => {
+      const name = u.user.full_name?.toLowerCase() || "";
+      const nickname = u.user.nick_name?.toLowerCase() || "";
+      const query = q.toLowerCase();
+
+      return name.includes(query) || nickname.includes(query);
+    });
+
+    if (searchedUsers.length === 0) {
+      return { message: "No such users exists" };
+    }
+    return searchedUsers;
+  },
 };
 module.exports = groupService;
 
@@ -582,4 +734,10 @@ and send notification to the user.
 10-updateGroup: First, verify that the teacher is the creator of the group. then handle the update of the image ( uploading the new image to the bucket). then updating the group info.
 11-deleteGroup: Check if the teacher is the creator of the group, and if so delete the group (cascades to the deletion of the group_members).
 12-getuserSkillInfo: When clicking on a skill in the HomePage, this service gets the info of the skill.
+13-removeGroupMember: This service checks that the removes it the owner of the group, checks that the member is actually in the group and deletes or removes the member from the 'group_members'
+table.
+14-getGroupMembers: This service checks that the requester is the group creator, and retrieves the group members of a particular group.
+15-getFriendsWithInterest: This service fetches a list of users who are friends with the creator of the group (teacher), who have assigned to themselves the same skill as the one of the group, and with
+proficiency_level similar to the group difficulty.
+16-searchPossibleMembers: Retrieves the teacher's list of friends who are not members but have an interest and can become members, and applies a search query on them.
 */
