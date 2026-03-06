@@ -6,11 +6,13 @@ const sessionController = {
     try {
       const userId = req.user.id;
       const { groupId } = req.params;
+      const artifactFiles = req.files;
 
       const newSession = await sessionService.createSession(
         userId,
         groupId,
         req.validatedData,
+        artifactFiles,
       );
 
       res.status(201).json({
@@ -22,6 +24,73 @@ const sessionController = {
       next(error);
     }
   },
+  //Get Existing Session's Artifacts
+  getSessionArtifacts: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { sessionId } = req.params;
+
+      const artifacts = await sessionService.getSessionArtifacts(
+        sessionId,
+        userId,
+      );
+
+      res.status(200).json({
+        success: true,
+        count: artifacts.length,
+        data: artifacts,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Upload artifacts to existing session
+  uploadArtifacts: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { sessionId } = req.params;
+      const artifactFiles = req.files;
+
+      if (!artifactFiles || artifactFiles.length === 0) {
+        return res.status(400).json({
+          error: "No files provided",
+        });
+      }
+
+      const artifacts = await sessionService.uploadArtifactsToSession(
+        userId,
+        sessionId,
+        artifactFiles,
+      );
+
+      res.status(201).json({
+        success: true,
+        message: "Artifacts uploaded successfully",
+        data: artifacts,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  // Delete artifact
+  deleteArtifact: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { artifactId } = req.params;
+
+      const result = await sessionService.deleteArtifact(userId, artifactId);
+
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
   // Get session details
   getSessionDetails: async (req, res, next) => {
     try {

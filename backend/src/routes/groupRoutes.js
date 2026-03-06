@@ -8,7 +8,7 @@ const {
   updateGroupSchema,
   notificationSchema,
 } = require("../utils/validators");
-const upload = require("../utils/fileUpload");
+const { upload } = require("../utils/fileUpload");
 
 // All routes require authentication
 router.use(authenticate);

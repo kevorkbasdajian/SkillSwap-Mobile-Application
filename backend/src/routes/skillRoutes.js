@@ -4,7 +4,7 @@ const skillController = require("../controllers/skillController");
 const authenticate = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
 const { createSKillSchema } = require("../utils/validators");
-const upload = require("../utils/fileUpload");
+const { upload } = require("../utils/fileUpload");
 
 //Routes
 router.use(authenticate);

@@ -7,19 +7,44 @@ const storage = multer.memoryStorage();
 
 //File filter for images only
 const fileFilter = (req, file, cb) => {
-  const allowedTypes = /jpeg|jpg|png|gif|webp/;
-  const extname = allowedTypes.test(
-    path.extname(file.originalname).toLowerCase(),
-  );
-  const mimetype = allowedTypes.test(file.mimetype);
+  // Allow images
+  const imageTypes = /jpeg|jpg|png|gif|webp/;
 
-  if (mimetype && extname) {
+  // Allow documents
+  const documentTypes = /pdf|doc|docx|txt|xls|xlsx|ppt|pptx/;
+
+  // Allow other common types
+  const otherTypes = /csv|zip|rar/;
+
+  const extname = path
+    .extname(file.originalname)
+    .toLowerCase()
+    .replace(".", "");
+  const mimetype = file.mimetype;
+
+  if (
+    imageTypes.test(extname) ||
+    documentTypes.test(extname) ||
+    otherTypes.test(extname) ||
+    mimetype.includes("image") ||
+    mimetype.includes("pdf") ||
+    mimetype.includes("document") ||
+    mimetype.includes("word") ||
+    mimetype.includes("excel") ||
+    mimetype.includes("powerpoint") ||
+    mimetype.includes("text")
+  ) {
     return cb(null, true);
   } else {
-    cb(new Error("Only image files (jpeg,jpg,png,gif,webp) are allowed"));
+    cb(
+      new Error(
+        "Invalid file type. Allowed: images, PDF, Word, Excel, PowerPoint, text files",
+      ),
+    );
   }
 };
 
+// Multer upload instance for single file
 const upload = multer({
   storage: storage,
   limits: {
@@ -28,7 +53,16 @@ const upload = multer({
   fileFilter: fileFilter,
 });
 
-module.exports = upload;
+// Multer upload instance for multiple files
+const uploadArtifacts = multer({
+  storage: storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+  },
+  fileFilter: fileFilter,
+});
+
+module.exports = { upload, uploadArtifacts };
 
 /*
 1- path -> extracts file extensions safely

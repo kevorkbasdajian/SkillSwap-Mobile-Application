@@ -29,7 +29,20 @@ const uploadToSupabase = async (file, bucketName) => {
   }
 };
 
-module.exports = { uploadToSupabase };
+// Upload multiple files
+const uploadMultipleToSupabase = async (files, bucketName) => {
+  try {
+    const uploadPromises = files.map((file) =>
+      uploadToSupabase(file, bucketName),
+    );
+    const urls = await Promise.all(uploadPromises);
+    return urls;
+  } catch (error) {
+    throw new Error(`Multiple upload failed: ${error.message}`);
+  }
+};
+
+module.exports = { uploadToSupabase, uploadMultipleToSupabase };
 
 /*
 1- first, we extract the extension of the file and pair it with a random string

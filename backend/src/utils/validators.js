@@ -195,6 +195,49 @@ const updateSessionSchema = Joi.object({
   status: Joi.string().valid("scheduled", "completed", "cancelled").optional(),
 });
 
+// This schema is to validate chat messages
+const sendMessageSchema = Joi.object({
+  content: Joi.string().min(1).max(5000).required().messages({
+    "string.min": "Message cannot be empty",
+    "string.max": "Message cannot exceed 5000 characters",
+    "any.required": "Message content is required",
+  }),
+  reply_to_message_id: Joi.string().uuid().optional().allow(null),
+});
+
+//This schema is to create a Poll
+const createPollSchema = Joi.object({
+  question: Joi.string().min(5).max(500).required().messages({
+    "string.min": "Question must be at least 5 characters",
+    "string.max": "Question cannot exceed 500 characters",
+    "any.required": "Poll question is required",
+  }),
+  options: Joi.array()
+    .items(Joi.string().min(1).max(255))
+    .min(2)
+    .max(10)
+    .required()
+    .messages({
+      "array.min": "Poll must have at least 2 options",
+      "array.max": "Poll cannot have more than 10 options",
+      "any.required": "Poll options are required",
+    }),
+  allow_multiple_answers: Joi.boolean().default(false),
+  expires_at: Joi.date().iso().min("now").optional().allow(null),
+});
+
+// This schema is to validate poll answer
+const votePollSchema = Joi.object({
+  option_ids: Joi.array()
+    .items(Joi.string().uuid())
+    .min(1)
+    .required()
+    .messages({
+      "array.min": "You must select at least one option",
+      "any.required": "Vote options are required",
+    }),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
@@ -207,6 +250,9 @@ module.exports = {
   notificationSchema,
   createSessionSchema,
   updateSessionSchema,
+  sendMessageSchema,
+  createPollSchema,
+  votePollSchema,
 };
 
 /*

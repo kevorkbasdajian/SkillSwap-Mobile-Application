@@ -51,8 +51,28 @@ const initializeSOcket = (server) => {
   io.on("connection", (socket) => {
     console.log(`User connect: ${socket.userId}`);
 
-    //Join user's personal room
+    //Join user's personal room for targeted notifications
     socket.join(`user:${socket.userId}`);
+
+    // Join group chat room
+    socket.on("join-group-chat", (groupChatId) => {
+      socket.join(`group-chat:${groupChatId}`);
+      console.log(`User ${socket.userId} joined group-chat:${groupChatId}`);
+    });
+
+    //Leave group chat room
+    socket.on("leave-group-chat", (groupChatId) => {
+      socket.leave(`group-chat:${groupChatId}`);
+      console.log(`User ${socket.userId} left group-chat:${groupChatId}`);
+    });
+
+    // Typing indicator
+    socket.on("typing", ({ groupChatId, isTyping }) => {
+      socket.to(`group-chat:${groupChatId}`).emit("user-typing", {
+        userId: socket.userId,
+        isTyping,
+      });
+    });
 
     //Handle disconnection
     socket.on("disconnect", () => {
