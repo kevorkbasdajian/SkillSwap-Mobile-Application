@@ -23,6 +23,9 @@ const config = {
     password: process.env.EMAIL_PASSWORD,
     from: process.env.EMAIL_FROM,
   },
+  groq: {
+    apiKey: process.env.GROQ_API_KEY,
+  },
 };
 
 const requiredEnvVars = [
@@ -31,6 +34,7 @@ const requiredEnvVars = [
   "SUPABASE_ANON_KEY",
   "EMAIL_USER",
   "EMAIL_PASSWORD",
+  "GROQ_API_KEY",
 ];
 const missingEnvVars = requiredEnvVars.filter(
   (varName) => !process.env[varName],

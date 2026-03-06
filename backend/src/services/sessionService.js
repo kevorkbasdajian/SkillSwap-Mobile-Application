@@ -1,5 +1,6 @@
 // This file is to handle requests related to sessions.
 const supabase = require("../config/database");
+const artifactExtractor = require("../utils/artifactExtractor");
 const { createNotification } = require("../utils/notification");
 const { uploadMultipleToSupabase } = require("../utils/supabaseUpload");
 
@@ -74,12 +75,33 @@ const sessionService = {
           file_name: file.originalname, // Store original filename
         }));
 
-        const { error: artifactsError } = await supabase
+        const { data: savedArtifacts, error: artifactsError } = await supabase
           .from("artifacts")
-          .insert(artifacts);
+          .insert(artifacts)
+          .select();
 
         if (artifactsError) {
           console.error("Failed to save artifacts:", artifactsError);
+        } else {
+          // Process each artifact to generate embeddings
+          for (const artifact of savedArtifacts) {
+            artifactExtractor
+              .processArtifactWithEmbeddings(
+                artifact.id,
+                artifact.file_url,
+                artifact.file_type,
+                artifact.file_name,
+              )
+              .catch((error) => {
+                console.error(
+                  `Failed to process artifact ${artifact.file_name}:`,
+                  error,
+                );
+              });
+          }
+          console.log(
+            `Started processing ${savedArtifacts.length} artifacts for embeddings`,
+          );
         }
       } catch (uploadError) {
         console.error("Failed to upload artifacts:", uploadError);
