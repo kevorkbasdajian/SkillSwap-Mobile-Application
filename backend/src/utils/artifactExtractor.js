@@ -1,13 +1,13 @@
 // This file is to extract text from artifacts, and process and store them in the artifact_embeddings table
 
-const pdf = require("pdf-parse");
+const PDFParser = require("pdf2json");
 const mammoth = require("mammoth");
 const supabase = require("../config/database");
 const embeddingService = require("../services/embeddingService");
 
 const artifactExtractor = {
   //Extract text from a single artifact
-  extractTextFromArtifact: async (artifactUrl, fileType) => {
+  extractTextFromArtifact: async (artifactUrl, fileType, fileName) => {
     try {
       //Download file from Supabase storage
       const response = await fetch(artifactUrl);
@@ -17,9 +17,36 @@ const artifactExtractor = {
 
       //Extract based on file type
       if (fileType.includes("pdf")) {
-        //Extract from PDF
-        const data = await pdf(Buffer.from(buffer));
-        extractedText = data.text;
+        const dataBuffer = Buffer.from(buffer);
+
+        extractedText = await new Promise((resolve, reject) => {
+          const pdfParser = new PDFParser();
+
+          pdfParser.on("pdfParser_dataError", (errData) => {
+            reject(errData.parserError);
+          });
+
+          pdfParser.on("pdfParser_dataReady", (pdfData) => {
+            try {
+              let text = "";
+
+              pdfData.Pages.forEach((page) => {
+                page.Texts.forEach((textItem) => {
+                  textItem.R.forEach((r) => {
+                    text += decodeURIComponent(r.T) + " ";
+                  });
+                });
+                text += "\n\n";
+              });
+
+              resolve(text);
+            } catch (err) {
+              reject(err);
+            }
+          });
+
+          pdfParser.parseBuffer(dataBuffer);
+        });
       } else if (
         fileType.includes("word") ||
         fileType.includes("document") ||
@@ -105,9 +132,9 @@ const artifactExtractor = {
       }
 
       const extractionPromises = artifacts.map(async (artifact) => {
-        const text = artifactExtractor.extractTextFromArtifact(
+        const text = await artifactExtractor.extractTextFromArtifact(
           artifact.file_url,
-          artifact.file_name,
+          artifact.file_type,
         );
         if (text) {
           return `\n\n--- ${artifact.file_name} --- \n${text}`;
@@ -134,11 +161,12 @@ const artifactExtractor = {
   ) => {
     try {
       console.log(`Processing artifact: ${fileName}`);
-
+      console.log("Artifact id is", artifactId);
       //Step 1: Extract text from artifact
       const extractedText = await artifactExtractor.extractTextFromArtifact(
         artifactUrl,
         fileType,
+        fileName,
       );
 
       if (!extractedText || extractedText.trim().length === 0) {

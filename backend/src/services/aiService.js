@@ -4,6 +4,7 @@ const Groq = require("groq-sdk");
 const config = require("../config/env");
 const artifactExtractor = require("../utils/artifactExtractor");
 const embeddingService = require("./embeddingService");
+const supabase = require("../config/database");
 
 //Initialize Groq client
 const groq = new Groq({
@@ -27,6 +28,7 @@ const aiService = {
       if (!sessions || sessions.length === 0) {
         return [];
       }
+      console.log("Sessions related to these group", sessions);
 
       const sessionIds = sessions.map((s) => s.id);
 
@@ -38,6 +40,7 @@ const aiService = {
       if (!artifacts || artifacts.length === 0) {
         return [];
       }
+      console.log("Artifacts related to these group", artifacts);
 
       const artifactIds = artifacts.map((a) => a.id);
 
@@ -51,6 +54,7 @@ const aiService = {
           artifact_ids: artifactIds,
         },
       );
+      console.log("Similar chunks", similarChunks);
 
       if (error) {
         console.error("Vecotr search error", error);
@@ -65,7 +69,7 @@ const aiService = {
   },
 
   //Generate AI answer based on artifacts
-  generateAnswer: async (question, artifactTexts, conversationHistory = []) => {
+  generateAnswer: async (question, groupId, conversationHistory = []) => {
     try {
       //Step 1: Find relevant chunks
       const relevantChunks = await aiService.findRelevantChunks(
@@ -85,22 +89,6 @@ const aiService = {
       }
 
       //Step 3: Build optimized system prompt
-
-      //       const systemPrompt = `You are an AI teaching assistant for a learning group.
-      // Your role is to answer student questions STRICTLY based on the provided course materials.
-
-      // CRITICAL RULES:
-      // 1. ONLY use information from the course materials provided below
-      // 2. If the answer is NOT in the materials, respond: "I don't have enough information in the provided course materials to answer this question. Please ask your teacher for clarification."
-      // 3. DO NOT use your general knowledge or training data
-      // 4. Quote or reference relevant parts of the materials when answering
-      // 5. Be clear, concise, and educational
-      // 6. If the materials are empty or insufficient, always say you don't have enough information
-
-      // COURSE MATERIALS:
-      // ${artifactTexts || "No course materials have been provided yet."}
-
-      // Now answer the student's question based ONLY on the materials above.`;
 
       const systemPrompt = `You are an AI teaching assistant. Answer questions ONLY using the provided course materials below.
 
@@ -125,7 +113,7 @@ ${contextText}`;
 
       // Step 5: Call Groq API
       const response = await groq.chat.completions.create({
-        model: "llama-3.1-70b-versatile",
+        model: "llama-3.3-70b-versatile",
         messages: messages,
         temperature: 0.3,
         max_tokens: 1000,
@@ -153,7 +141,7 @@ ${contextText}`;
   testConnection: async () => {
     try {
       const response = await groq.chat.completions.create({
-        model: "llama-3.1-70b-versatile",
+        model: "llama-3.3-70b-versatile",
         messages: [{ role: "user", content: "Hello" }],
         max_tokens: 10,
       });
@@ -169,6 +157,6 @@ ${contextText}`;
 module.exports = aiService;
 
 /*
-1-findRelevantChunks:
+1-findRelevantChunks: Embeds a question, Gets all sessions for a group, gets the artifacts connected to these sessions, performs vector similarity search
 2-generateAnswer:
 */

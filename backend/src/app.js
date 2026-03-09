@@ -14,6 +14,7 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const groupRoutes = require("./routes/groupRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const chatRoutes = require("./routes/chatRoutes");
+const qaRoutes = require("./routes/qaRoutes");
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/groups", groupRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/qa", qaRoutes);
 
 //Health check endpoint
 app.get("/health", (req, res) => {

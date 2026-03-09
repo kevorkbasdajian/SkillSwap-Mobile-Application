@@ -237,6 +237,25 @@ const sessionService = {
     if (artifactsError) {
       throw new Error(`Failed to save artifacts: ${artifactsError.message}`);
     }
+    // Process each artifact to generate embeddings
+    for (const artifact of savedArtifacts) {
+      artifactExtractor
+        .processArtifactWithEmbeddings(
+          artifact.id,
+          artifact.file_url,
+          artifact.file_type,
+          artifact.file_name,
+        )
+        .catch((error) => {
+          console.error(
+            `Failed to process artifact ${artifact.file_name}:`,
+            error,
+          );
+        });
+    }
+    console.log(
+      `Started processing ${savedArtifacts.length} artifacts for embeddings`,
+    );
 
     return savedArtifacts;
   },

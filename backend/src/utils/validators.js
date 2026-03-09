@@ -238,6 +238,15 @@ const votePollSchema = Joi.object({
     }),
 });
 
+//This schema is to ask valid questions
+const askQuestionSchema = Joi.object({
+  question: Joi.string().min(5).max(1000).required().messages({
+    "string.min": "Question must be at least 5 characters",
+    "string.max": "Question cannot exceed 1000 characters",
+    "any.required": "Question is required",
+  }),
+});
+
 module.exports = {
   registerSchema,
   profileSchema,
@@ -253,6 +262,7 @@ module.exports = {
   sendMessageSchema,
   createPollSchema,
   votePollSchema,
+  askQuestionSchema,
 };
 
 /*
