@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between",
-    paddingVertical: 60,
+    paddingVertical: 80,
     paddingTop: 90,
   },
   logoContainer: {
