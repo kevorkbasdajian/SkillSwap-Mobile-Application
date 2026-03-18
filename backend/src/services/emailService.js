@@ -41,77 +41,86 @@ const sendEmail = async (to, subject, html) => {
 };
 
 const sendPasswordResetEmail = async (email, resetToken, userName) => {
-  const resetUrl = `${config.frontendUrl}/reset-password?token=${resetToken}`;
+  const resetUrl = `https://medallic-unproscriptively-cori.ngrok-free.dev/reset-password?token=${resetToken}`;
 
   const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <style>
-        body {
-          font-family: Arial, sans-serif;
-          line-height: 1.6;
-          color: #333;
-        }
-        .container {
-          max-width: 600px;
-          margin: 0 auto;
-          padding: 20px;
-        }
-        .header {
-          background: #007bff;
-          color: white;
-          padding: 20px;
-          text-align: center;
-          border-radius: 5px 5px 0 0;
-        }
-        .content {
-          background: #f9f9f9;
-          padding: 30px;
-          border-radius: 0 0 5px 5px;
-        }
-        .button {
-          display: inline-block;
-          background: #007bff;
-          color: white;
-          padding: 12px 30px;
-          text-decoration: none;
-          border-radius: 5px;
-          margin: 20px 0;
-        }
-        .footer {
-          margin-top: 20px;
-          padding-top: 20px;
-          border-top: 1px solid #ddd;
-          font-size: 12px;
-          color: #666;
-        }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <h1>SkillSwap</h1>
-        </div>
-        <div class="content">
-          <h2>Password Reset Request</h2>
-          <p>Hi ${userName},</p>
-          <p>We received a request to reset your password. Click the button below to create a new password:</p>
-          <p style="text-align: center;">
-            <a href="${resetUrl}" class="button">Reset Password</a>
+    <!doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background: #e0b9a1;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        border-radius: 5px 5px 0 0;
+      }
+      .content {
+        background: #f9f9f9;
+        padding: 30px;
+        border-radius: 0 0 5px 5px;
+      }
+      .button {
+        display: inline-block;
+        background: #3292af;
+        color: white;
+        padding: 12px 30px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .footer {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #ddd;
+        font-size: 12px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>SkillSwap</h1>
+      </div>
+      <div class="content">
+        <h2>Password Reset Request</h2>
+        <p>Hi ${userName},</p>
+        <p>
+          We received a request to reset your password. Click the button below
+          to create a new password:
+        </p>
+        <p style="text-align: center">
+          <a href="${resetUrl}" class="button">Reset Password</a>
+        </p>
+        <p>Or copy and paste this link into your browser:</p>
+        <p style="word-break: break-all; color: #007bff">${resetUrl}</p>
+        <p><strong>This link will expire in 1 hour.</strong></p>
+        <p>
+          If you didn't request a password reset, you can safely ignore this
+          email.
+        </p>
+        <div class="footer">
+          <p>Best regards,<br />The SkillSwap Team</p>
+          <p style="font-size: 11px">
+            This is an automated email. Please do not reply.
           </p>
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #007bff;">${resetUrl}</p>
-          <p><strong>This link will expire in 1 hour.</strong></p>
-          <p>If you didn't request a password reset, you can safely ignore this email.</p>
-          <div class="footer">
-            <p>Best regards,<br>The SkillSwap Team</p>
-            <p style="font-size: 11px;">This is an automated email. Please do not reply.</p>
-          </div>
         </div>
       </div>
-    </body>
-    </html>
+    </div>
+  </body>
+</html>
+
   `;
   await sendEmail(email, "Reset Your SkillSwap Password", html);
 };

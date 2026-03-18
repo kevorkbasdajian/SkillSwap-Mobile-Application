@@ -4,7 +4,8 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 const authenticate = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
-const { profileSchema } = require("../utils/validators");
+const { profileSchema, completeProfileSchema } = require("../utils/validators");
+const { upload } = require("../utils/fileUpload");
 
 //All routes require authentication
 router.use(authenticate);
@@ -13,7 +14,20 @@ router.use(authenticate);
 router.get("/profile", userController.getProfile);
 
 // PUT /api/users/profile - Update current user profile
-router.put("/profile", validate(profileSchema), userController.updateProfile);
+router.put(
+  "/profile",
+  upload.single("profile_image"),
+  validate(profileSchema),
+  userController.updateProfile,
+);
+
+//PUT /api/users/complete-profile - Complete user profile setup
+router.put(
+  "/complete-profile",
+  upload.single("profile_image"),
+  validate(completeProfileSchema),
+  userController.completeUserProfile,
+);
 
 // GET /api/users/search - Search users
 router.get("/search", userController.searchUsers);

@@ -46,14 +46,14 @@ const authService = {
       .single();
 
     if (error) {
-      throw new error("Invalid email or password");
+      throw new Error("Invalid email or password");
     }
 
     //Verify Password
     const isPasswordValid = await comparePassword(password, user.password_hash);
 
     if (!isPasswordValid) {
-      throw new Error("Invalid password");
+      throw new Error("Invalid email or password");
     }
 
     //Generate a JWT token

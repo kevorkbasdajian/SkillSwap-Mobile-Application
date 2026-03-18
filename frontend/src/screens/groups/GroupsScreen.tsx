@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet } from "react-native";
-import { COLORS, FONT_USAGE, FONT_SIZES } from "@/src/constants";
+import { COLORS, FONT_USAGE, FONT_SIZES } from "../../constants";
 
-export default function LoginScreen() {
+export default function GroupsScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login Screen</Text>
+      <Text style={styles.title}>Groups Screen</Text>
       <Text style={styles.subtitle}>Coming soon...</Text>
     </View>
   );

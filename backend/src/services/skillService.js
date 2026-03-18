@@ -23,7 +23,9 @@ const skillService = {
   },
 
   //Create new custom skill
-  createSkill: async (name, iconFile, is_default) => {
+  createSkill: async (data) => {
+    console.log("Data is", data);
+    const { name, icon_url, is_default = false } = data;
     //Check if skill with same name already exists
     const { data: existsingSkill } = await supabase
       .from("skills")
@@ -34,13 +36,10 @@ const skillService = {
     if (existsingSkill) {
       throw new Error(" A skill with this name already exists");
     }
-
-    //Upload icon to Supabase storage
-    const iconurl = await uploadToSupabase(iconFile, "avatars");
     //Insert skill into database
     const { data: newSkill, error } = await supabase
       .from("skills")
-      .insert([{ name, icon_url: iconurl, is_default }])
+      .insert([{ name, icon_url: icon_url, is_default }])
       .select()
       .single();
 

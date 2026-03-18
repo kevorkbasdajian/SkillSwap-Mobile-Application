@@ -86,10 +86,10 @@ export const LINE_HEIGHTS = {
 };
 
 export const FONT_WEIGHTS = {
-  regular: "400",
+  regular: 400,
   medium: 500,
-  semiBold: "600",
-  bold: "700",
-  extraBold: "800",
-  black: "900",
+  semiBold: 600,
+  bold: 700,
+  extraBold: 800,
+  black: 900,
 };

@@ -16,6 +16,8 @@ import {
   View,
   ViewStyle,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
@@ -34,10 +36,13 @@ export const Input: React.FC<InputProps> = ({
   isPassword = false,
   textStyle,
   inputStyle,
+  onFocus,
+  onBlur,
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isSecure, setIsSecure] = useState(isPassword);
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -45,17 +50,26 @@ export const Input: React.FC<InputProps> = ({
       <View
         style={[
           styles.inputContainer,
+          inputStyle,
+
           isFocused && styles.inputFocused,
           error && styles.inputError,
-          inputStyle,
+          { borderWidth: isFocused ? 2 : 1 },
         ]}
       >
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
+
         <TextInput
           style={[styles.input, textStyle]}
           placeholderTextColor={COLORS.lightBlack}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(e) => {
+            setIsFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            onBlur?.(e);
+          }}
           secureTextEntry={isSecure}
           {...props}
         />
@@ -64,9 +78,12 @@ export const Input: React.FC<InputProps> = ({
             onPress={() => setIsSecure(!isSecure)}
             style={styles.rightIcon}
           >
-            <Text style={styles.showHideText}>
-              {isSecure ? "Show" : "Hide"}
-            </Text>
+            <MaterialCommunityIcons
+              name={!isSecure ? "eye-off-outline" : "eye-outline"}
+              size={24}
+              color={error ? COLORS.error : COLORS.darkBlue}
+              onPress={() => setIsSecure(!isSecure)}
+            />
           </TouchableOpacity>
         )}
         {rightIcon && !isPassword && (
@@ -93,13 +110,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 1,
     borderColor: COLORS.dimBlue,
     paddingHorizontal: SPACING.xl,
   },
   inputFocused: {
     borderColor: COLORS.midBlue,
-    borderWidth: 2,
   },
 
   inputError: {

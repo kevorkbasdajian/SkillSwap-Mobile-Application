@@ -2,6 +2,7 @@ export const COLORS = {
   //Primary Colors
   lightBlue: "#81C3D7",
   midBlue: "#3292AF",
+  midDarkBlue: "#567B99",
   darkBlue: "#2F6690",
   dimBlue: "#C4CFD8",
   lightOrange: "#E76F51",

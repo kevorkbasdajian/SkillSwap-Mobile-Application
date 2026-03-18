@@ -28,9 +28,35 @@ const loginSchema = Joi.object({
   }),
 });
 
-//This schema is for profile creation
+//This schema is for profile update
 const profileSchema = Joi.object({
   nick_name: Joi.string().max(50).optional().allow(""),
+  gender: Joi.string().valid("male", "female").optional().messages({
+    "any.only": "Gender must be either male or female",
+    "any.required": "Gender is required",
+  }),
+  education_level: Joi.string()
+    .valid(
+      "Elementary",
+      "High school",
+      "Bachelor's degree",
+      "Master's degree or higher",
+    )
+    .optional()
+    .messages({
+      "any.required": "Education level is required",
+    }),
+  biography: Joi.string().optional().allow(""),
+  date_of_birth: Joi.date().max("now").optional(),
+});
+
+//This schema is for profile completion
+const completeProfileSchema = Joi.object({
+  nick_name: Joi.string().max(50).min(2).required().messages({
+    "string.min": "Nick Name must be minimum 2 characters",
+    "string.max": "String cannot exceed 50 characters",
+    "any.required": "Nick Name is required",
+  }),
   gender: Joi.string().valid("male", "female").required().messages({
     "any.only": "Gender must be either male or female",
     "any.required": "Gender is required",
@@ -47,17 +73,49 @@ const profileSchema = Joi.object({
       "any.required": "Education level is required",
     }),
   biography: Joi.string().optional().allow(""),
+  date_of_birth: Joi.date().max("now").required().messages({
+    "any.max": "Date cannot exceed present date",
+    "any.required": "Date of Birth is required",
+  }),
+
+  skills_to_learn: Joi.array()
+    .items(
+      Joi.object({
+        skill_id: Joi.string().required(),
+      }),
+    )
+    .min(2)
+    .required()
+    .messages({
+      "array.min": "You must select at least 2 skills to learn",
+      "any.required": "Skills to learn are required",
+    }),
+
+  skills_to_teach: Joi.array()
+    .items(
+      Joi.object({
+        skill_id: Joi.string().required(),
+      }),
+    )
+    .min(2)
+    .required()
+    .messages({
+      "array.min": "You must select at least 2 skills to teach",
+      "any.required": "Skills to teach are required",
+    }),
 });
 
-//This schema is for SKill creation
+//This schema is for Skill creation
 const createSKillSchema = Joi.object({
   name: Joi.string().min(2).max(100).required().messages({
     "string.min": "Skill name must be at least 2 characters",
     "string.max": "Skill name cannot exceed 100 characters",
     "any.required": "Skill name is required",
   }),
-  is_default: Joi.boolean().required(),
-  // Note: icon/image will be handled by multer middleware for file upload
+  is_default: Joi.boolean().default(false),
+  icon_url: Joi.string().required().messages({
+    "any.required": "Skill Icon is required",
+  }),
 });
 
 //This schema is for forgot password
@@ -250,6 +308,7 @@ const askQuestionSchema = Joi.object({
 module.exports = {
   registerSchema,
   profileSchema,
+  completeProfileSchema,
   loginSchema,
   createSKillSchema,
   forgotPasswordSchema,

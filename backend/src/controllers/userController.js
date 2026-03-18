@@ -25,12 +25,30 @@ const userController = {
       const updatedUser = await userService.updateUserProfile(
         req.user.id,
         req.validatedData,
+        req?.file,
       );
 
       res.status(200).json({
         success: true,
         message: "Profile updated successfully",
         data: updatedUser,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  completeUserProfile: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const data = req.validatedData;
+      const file = req.file;
+
+      const message = await userService.completeUserProfile(userId, data, file);
+
+      res.status(200).json({
+        success: true,
+        message: message,
       });
     } catch (error) {
       next(error);
@@ -141,5 +159,6 @@ to update the profile of a user.
 6- removeRecentSearch: remove a user's one recent search.
 7- clearRecentSearches: Clear a user's recent searches.
 8-getPublicProfile: Get another user's public profile.
+9-completeUserProfile: Complete the profile of a user.
 
 */

@@ -17,6 +17,7 @@ export const BORDER_RADIUS = {
   lg: 12,
   xl: 16,
   xxl: 20,
+  xxxl: 30,
   round: 999,
 };
 export const ICON_SIZES = {

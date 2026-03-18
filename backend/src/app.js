@@ -4,6 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const config = require("./config/env");
+const path = require("path");
 
 //Importing routes
 const authRoutes = require("./routes/authRoutes");
@@ -32,6 +33,10 @@ app.use(
 //Body parsing middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
+app.get("/reset-password", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "reset-password.html"));
+});
 
 //API routes
 app.use("/api/auth", authRoutes);

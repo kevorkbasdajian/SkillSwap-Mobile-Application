@@ -23,14 +23,10 @@ const skillController = {
   //Create new custom skill
   createSkill: async (req, res, next) => {
     try {
-      const { name } = req.body;
-      const iconFile = req.file;
-      if (!iconFile) {
-        return res.status(400).json({
-          error: "Skill icon is required",
-        });
-      }
-      const newskill = await skillService.createSkill(name, iconFile, false);
+      const data = req.validatedData;
+      console.log("Validated data is", req.validatedData);
+
+      const newskill = await skillService.createSkill(data);
 
       res.status(201).json({
         success: true,

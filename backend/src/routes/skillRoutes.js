@@ -13,12 +13,7 @@ router.use(authenticate);
 router.get("/", skillController.getAllSkills);
 
 // POST /api/skills - Create new custom skill (with icon upload)
-router.post(
-  "/",
-  upload.single("icon"),
-  validate(createSKillSchema),
-  skillController.createSkill,
-);
+router.post("/", validate(createSKillSchema), skillController.createSkill);
 
 // POST /api/skills/user - Add skills to user profile
 router.post("/user", skillController.addUserSkills);

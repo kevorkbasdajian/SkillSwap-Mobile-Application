@@ -1,13 +1,16 @@
 // This file is to get user profile and update it.
 const { map } = require("../app");
 const supabase = require("../config/database");
+const { uploadToSupabase } = require("../utils/supabaseUpload");
 
 const userService = {
   //Get user profile by ID
   getUserProfile: async (userId) => {
     const { data: user, error } = await supabase
       .from("users")
-      .select("id,email,full_name,gender,profile_image_url,education_level")
+      .select(
+        "id,email,full_name,gender,profile_image_url,education_level,date_of_birth",
+      )
       .eq("id", userId)
       .single();
     if (error || !user) {
@@ -15,14 +18,14 @@ const userService = {
     }
     return user;
   },
-  updateUserProfile: async (userId, updateData) => {
+  updateUserProfile: async (userId, updateData, file) => {
     const allowedFields = [
       "full_name",
       "nick_name",
       "gender",
       "biography",
-      "profile_image_url",
       "education_level",
+      "date_of_birth",
     ];
     const filteredData = {};
     allowedFields.forEach((field) => {
@@ -30,9 +33,18 @@ const userService = {
         filteredData[field] = updateData[field];
       }
     });
-    if (Object.keys(filteredData).length === 0) {
+    if (Object.keys(filteredData).length === 0 && !file) {
       throw new Error("No valid fields to update");
     }
+    //0.5- Upload file
+    let profileImageUrl = null;
+
+    //Upload cover image if provided, otherwise use skill icon
+    if (file) {
+      profileImageUrl = await uploadToSupabase(file, "avatars");
+      filteredData.profile_image_url = profileImageUrl;
+    }
+
     const { data: updatedUser, error } = await supabase
       .from("users")
       .update(filteredData)
@@ -45,6 +57,86 @@ const userService = {
       throw new Error(`Update failed: ${error.message}`);
     }
     return updatedUser;
+  },
+
+  //Complete User Profile(During initial Setup)
+  completeUserProfile: async (userId, profileData, file) => {
+    const {
+      nick_name,
+      date_of_birth,
+      gender,
+      biography,
+      education_level,
+      skills_to_teach,
+      skills_to_learn,
+    } = profileData;
+
+    //0.5- Upload file
+    let profileImageUrl = null;
+
+    //Upload cover image if provided, otherwise use skill icon
+    if (file) {
+      profileImageUrl = await uploadToSupabase(file, "avatars");
+    }
+
+    //1- Update user information
+    const { error: userError } = await supabase
+      .from("users")
+      .update({
+        nick_name,
+        date_of_birth,
+        gender,
+        biography,
+        education_level,
+        profile_image_url: profileImageUrl,
+      })
+      .eq("id", userId);
+    if (userError) {
+      throw new Error(`Failed to save user profile: ${userError.message}`);
+    }
+    console.log("Skills to teach", skills_to_teach);
+    console.log("Skills to learn", skills_to_learn);
+    //2- Insert skills to learn
+    const userLearnerSkillsData = skills_to_learn.map((skill) => ({
+      user_id: userId,
+      skill_id: skill.skill_id,
+      role: "learner",
+      proficiency_level: skill.is_default
+        ? Math.floor(Math.random() * 5) + 1
+        : skill.proficiency_level,
+      is_favorite: false,
+    }));
+
+    const { error: learnSkillError } = await supabase
+      .from("user_skills")
+      .insert(userLearnerSkillsData);
+    if (learnSkillError) {
+      throw new Error(
+        `Failed to insert learning skills: ${learnSkillError.message}`,
+      );
+    }
+
+    //3- Insert skills to teach
+    const userTeacherSkillsData = skills_to_teach.map((skill) => ({
+      user_id: userId,
+      skill_id: skill.skill_id,
+      role: "teacher",
+      proficiency_level: skill.is_default
+        ? Math.floor(Math.random() * 5) + 1
+        : skill.proficiency_level,
+      is_favorite: false,
+    }));
+
+    const { error: teachSkillError } = await supabase
+      .from("user_skills")
+      .insert(userTeacherSkillsData);
+    if (teachSkillError) {
+      throw new Error(
+        `Failed to insert teaching skills: ${teachSkillError.message}`,
+      );
+    }
+
+    return { message: "Profile completed successfully" };
   },
 
   //Get another user's public profile
@@ -161,5 +253,6 @@ certain attributes of a user.
 nick_name, etc. Then, the function fetches the # of teaching, learning, and friends count.
 Then, the function fetches the target user's connection with the current one to determine the state of the
 button. Then the function returns the skills of the users and sorts the data out in the return response.
+4-CompleteUserProfile: 
 
 */
