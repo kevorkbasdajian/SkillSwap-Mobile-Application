@@ -75,4 +75,33 @@ export const authAPI = {
   },
 };
 
+//Skills API
+export const skillsAPI = {
+  //1-getAllSkills: Retrieve default skills from the backend
+  getAllSkills: async () => {
+    const response = await api.get("/skills");
+    return response.data;
+  },
+
+  //2-createCustomSkill:Create a new skill
+  createCustomSkill: async (data: { name: string; icon_url: string }) => {
+    const response = await api.post("/skills", data);
+    return response.data;
+  },
+};
+
+//User API
+export const userAPI = {
+  completeProfile: async (formData: FormData) => {
+    console.log("Form Data is ", formData);
+    const response = await api.put("/users/complete-profile", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    console.log("response is", response.data);
+    return response.data;
+  },
+};
+
 export default api;

@@ -10,6 +10,7 @@ const validate = (schema) => {
         field: detail.path.join("."),
         message: detail.message,
       }));
+
       return res.status(400).json({
         error: "Validation failed",
         details: errors,

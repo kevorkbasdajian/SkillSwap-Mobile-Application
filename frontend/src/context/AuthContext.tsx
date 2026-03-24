@@ -2,11 +2,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 //This interface is needed to define the User data in the AuthContext.
 interface User {
-  id: string;
-  email: string;
-  full_name: string;
+  id?: string;
+  email?: string;
+  full_name?: string;
   nick_name?: string;
   profile_image_url?: string;
+  gender?: string;
+  date_of_birth?: string;
+  biography?: string;
+  education_level?: string;
 }
 //This interface is to define the types of the data stored in the AuthContext
 interface AuthContextType {
@@ -45,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (storedToken && storedUser) {
         setToken(storedToken);
+
         setUser(JSON.parse(storedUser));
       }
     } catch (error) {

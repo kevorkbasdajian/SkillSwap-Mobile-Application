@@ -49,3 +49,18 @@ export const resetPasswordSchema = Yup.object().shape({
     .oneOf([Yup.ref("password")], "Passwords must match")
     .required("Please confirm your password"),
 });
+
+export const profileInfoSchema = Yup.object().shape({
+  nick_name: Yup.string()
+    .min(2, "Nickname must be at least 2 characters")
+    .max(50, "Nickname must be less than 50 characters")
+    .required("Nickname is required"),
+  date_of_birth: Yup.date()
+    .max(new Date(), "Date of birth cannot be in the future")
+    .required("Date of birth is required"),
+  gender: Yup.string()
+    .oneOf(["male", "female"], "Please select a gender")
+    .required("Gender is required"),
+  biography: Yup.string().max(120, "Bio must be less than 120 characters"),
+  education_level: Yup.string().required("Education level is required"),
+});

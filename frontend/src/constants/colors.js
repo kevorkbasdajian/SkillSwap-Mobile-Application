@@ -17,7 +17,7 @@ export const COLORS = {
   lightGray: "#E4E3E3",
 
   //For Text colors
-  lightBlack: "#B3B6B8",
+  lightBlack: "#9c9ea0",
   lightBlack2: "#B5B5B5",
   lightBlack3: "#B4B4B4",
   midBlack: "#767474",

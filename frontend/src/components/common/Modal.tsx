@@ -36,6 +36,9 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   size = "medium",
 }) => {
+  if (!visible) {
+    return null;
+  }
   return (
     <RNModal
       visible={visible}
@@ -64,10 +67,12 @@ export const Modal: React.FC<ModalProps> = ({
                     <MaterialCommunityIcons
                       name="close"
                       size={25}
-                      color={COLORS.black}
+                      color={COLORS.midDarkBlue}
+                      style={{ marginBottom: 12 }}
                     />
                   </TouchableOpacity>
                 )}
+                <View style={styles.border} />
               </View>
             )}
 
@@ -89,8 +94,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   container: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.skinToneOrange,
     borderRadius: BORDER_RADIUS.xl,
+    borderColor: COLORS.midDarkBlue,
+    borderWidth: 3,
     padding: SPACING.xl,
     maxHeight: "90%",
   },
@@ -117,8 +124,18 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: FONT_USAGE.heading,
     fontSize: FONT_SIZES.xl,
-    color: COLORS.black,
+    color: COLORS.midDarkBlue,
     flex: 1,
+    marginBottom: 12,
+  },
+  border: {
+    position: "absolute",
+    bottom: 0,
+    height: 2,
+    width: "60%",
+    backgroundColor: COLORS.lightOrange,
+    left: "50%",
+    transform: [{ translateX: "-50%" }],
   },
   closeButton: {
     padding: SPACING.sm,

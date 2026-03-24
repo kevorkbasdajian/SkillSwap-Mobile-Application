@@ -26,6 +26,8 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
   textStyle?: TextStyle;
   inputStyle?: ViewStyle;
+  labelStyle?: ViewStyle;
+  ismultiline?: boolean;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -36,6 +38,8 @@ export const Input: React.FC<InputProps> = ({
   isPassword = false,
   textStyle,
   inputStyle,
+  labelStyle,
+  ismultiline = false,
   onFocus,
   onBlur,
   ...props
@@ -45,7 +49,7 @@ export const Input: React.FC<InputProps> = ({
 
   return (
     <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
 
       <View
         style={[
@@ -60,7 +64,11 @@ export const Input: React.FC<InputProps> = ({
         {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
 
         <TextInput
-          style={[styles.input, textStyle]}
+          style={[
+            styles.input,
+            textStyle,
+            ismultiline && { height: 100, textAlignVertical: "top" },
+          ]}
           placeholderTextColor={COLORS.lightBlack}
           onFocus={(e) => {
             setIsFocused(true);
@@ -110,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: BORDER_RADIUS.lg,
-    borderColor: COLORS.dimBlue,
+    borderColor: COLORS.darkBlue,
     paddingHorizontal: SPACING.xl,
   },
   inputFocused: {

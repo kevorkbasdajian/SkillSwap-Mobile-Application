@@ -9,6 +9,7 @@ import AuthNavigator from "./AuthNavigator";
 import TabNavigator from "./TabNavigator";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { COLORS } from "../constants";
+import ProfileCompletionNavigator from "./ProfileCompletionNavigator";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -25,11 +26,24 @@ export default function RootNavigator() {
   }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {user ? (
-        <Stack.Screen name="Main" component={TabNavigator} />
-      ) : (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: "white" },
+      }}
+    >
+      {!user ? (
+        // Not logged in - show auth flow
         <Stack.Screen name="Auth" component={AuthNavigator} />
+      ) : !user.nick_name ? (
+        // Logged in but profile incomplete - show profile completion
+        <Stack.Screen
+          name="ProfileCompletion"
+          component={ProfileCompletionNavigator}
+        />
+      ) : (
+        // Logged in and profile complete - show main app
+        <Stack.Screen name="Main" component={TabNavigator} />
       )}
     </Stack.Navigator>
   );

@@ -6,6 +6,7 @@ const authenticate = require("../middlewares/auth");
 const validate = require("../middlewares/validate");
 const { profileSchema, completeProfileSchema } = require("../utils/validators");
 const { upload } = require("../utils/fileUpload");
+const parseJsonFields = require("../middlewares/parse");
 
 //All routes require authentication
 router.use(authenticate);
@@ -25,6 +26,7 @@ router.put(
 router.put(
   "/complete-profile",
   upload.single("profile_image"),
+  parseJsonFields(["skills_to_learn", "skills_to_teach"]),
   validate(completeProfileSchema),
   userController.completeUserProfile,
 );

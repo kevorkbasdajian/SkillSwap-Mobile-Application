@@ -29,12 +29,12 @@ const skillService = {
     //Check if skill with same name already exists
     const { data: existsingSkill } = await supabase
       .from("skills")
-      .select("id")
+      .select("id, name, icon_url,is_default")
       .eq("name", name)
       .single();
 
     if (existsingSkill) {
-      throw new Error(" A skill with this name already exists");
+      return existsingSkill;
     }
     //Insert skill into database
     const { data: newSkill, error } = await supabase

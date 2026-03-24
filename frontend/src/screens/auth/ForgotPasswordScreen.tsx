@@ -208,10 +208,12 @@ export default function ForgotPasswordScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
       <Modal
-        title={errorMessage !== "" ? errorMessage : "Email Sent!"}
+        title={errorMessage?.toString() || "Email Sent!"}
         visible={showModal}
         onClose={() => {
+          setShowModal(false);
           if (errorMessage === "") {
             navigation.navigate("Login");
           }
