@@ -7,6 +7,8 @@ export const COLORS = {
   dimBlue: "#C4CFD8",
   lightOrange: "#E76F51",
   skinToneOrange: "#E0B9A1",
+  skinToneOrange2: "#eed2c0",
+
   lightPink: "#E396EA",
   darkPink: "#B449BE",
   black: "#000000",

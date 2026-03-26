@@ -101,9 +101,13 @@ const userService = {
       user_id: userId,
       skill_id: skill.skill_id,
       role: "learner",
-      proficiency_level: skill.is_default
-        ? Math.floor(Math.random() * 5) + 1
-        : skill.proficiency_level,
+      proficiency_level:
+        skill.proficiency_level !== undefined &&
+        skill.proficiency_level !== null
+          ? skill.proficiency_level
+          : skill.is_default
+            ? Math.floor(Math.random() * 5) + 1
+            : 1,
       is_favorite: false,
     }));
 
@@ -136,7 +140,7 @@ const userService = {
       );
     }
 
-    return { message: "Profile completed successfully" };
+    return { data: profileImageUrl };
   },
 
   //Get another user's public profile

@@ -14,7 +14,6 @@ const parseJsonFields = (fields) => (req, res, next) => {
       }
     });
 
-    console.log("AFTER PARSE:", req.body);
     next();
   } catch (err) {
     console.log("PARSE ERROR:", err.message);

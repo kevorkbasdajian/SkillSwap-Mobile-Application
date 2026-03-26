@@ -88,18 +88,37 @@ export const skillsAPI = {
     const response = await api.post("/skills", data);
     return response.data;
   },
+
+  //3- Get user's skills by role (teacher/learner)
+  getUserSkillsByRole: async (role: "teacher" | "learner") => {
+    const response = await api.get(`/skills/user/${role}`);
+    return response.data;
+  },
+
+  //4- Toggle Skill Favorite
+  setSkillFavorite: async (skillId: Number) => {
+    const response = await api.patch(`skills/user/${skillId}/favorite`);
+    return response.data;
+  },
+};
+
+//Groups API
+export const groupsAPI = {
+  //1- Get User Groups by Role
+  getUserGroupsByRole: async (role: "teacher" | "learner") => {
+    const response = await api.get(`groups/my-groups/${role}`);
+    return response.data;
+  },
 };
 
 //User API
 export const userAPI = {
   completeProfile: async (formData: FormData) => {
-    console.log("Form Data is ", formData);
     const response = await api.put("/users/complete-profile", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
-    console.log("response is", response.data);
     return response.data;
   },
 };

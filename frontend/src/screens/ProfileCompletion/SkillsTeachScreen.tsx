@@ -65,6 +65,7 @@ export default function SkillsTeachScreen() {
   const [newSkillName, setNewSkillName] = useState("");
   //New skill's Icon
   const [newSkillIcon, setNewSkillIcon] = useState("star");
+
   //To store error message if fetching all skills from backend fails
   //For loading state
   const [isLoading, setIsLoading] = useState(true);
@@ -312,7 +313,6 @@ export default function SkillsTeachScreen() {
                 placeholder="e.g., Pottery"
                 textStyle={{ color: COLORS.darkBlue }}
               />
-
               <Input
                 value={newSkillIcon}
                 label="Icon"
@@ -330,6 +330,7 @@ export default function SkillsTeachScreen() {
                 }
                 autoCapitalize={"none"}
               />
+
               <Button
                 title="Create Skill"
                 onPress={handleCreateSkill}

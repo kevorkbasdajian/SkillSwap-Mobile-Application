@@ -82,6 +82,8 @@ const completeProfileSchema = Joi.object({
     .items(
       Joi.object({
         skill_id: Joi.string().required(),
+        is_default: Joi.boolean().required(),
+        proficiency_level: Joi.number().required(),
       }),
     )
     .min(2)
@@ -95,6 +97,8 @@ const completeProfileSchema = Joi.object({
     .items(
       Joi.object({
         skill_id: Joi.string().required(),
+        is_default: Joi.boolean().required(),
+        proficiency_level: Joi.number().required(),
       }),
     )
     .min(2)

@@ -42,17 +42,17 @@ const userController = {
     try {
       const userId = req.user.id;
       const data = req.validatedData;
-      console.log("Data is (in controller", data);
       const file = req.file;
       if (file) {
         console.log("File is in the controller");
       }
 
-      const message = await userService.completeUserProfile(userId, data, file);
+      const profile = await userService.completeUserProfile(userId, data, file);
 
       res.status(200).json({
         success: true,
-        message: message,
+        message: "Profile Completed Successfully",
+        data: profile,
       });
     } catch (error) {
       next(error);

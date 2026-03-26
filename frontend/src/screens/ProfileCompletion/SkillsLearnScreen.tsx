@@ -228,7 +228,12 @@ export default function SkillsLearnScreen() {
         await AsyncStorage.removeItem("LearnSkills");
 
         //Update user context (triggers navigation to Main)
-        const UpdatedUser = { ...user, nick_name: profileData.nick_name };
+        const UpdatedUser = {
+          ...user,
+          nick_name: profileData.nick_name,
+          profile_image_url: response.data.data,
+        };
+        console.log("Updated User", UpdatedUser);
 
         //Save and update the user by calling the signIn method (which only updates the token and user => to trigger the shift to the main stack navigator)
         if (token) {
@@ -239,6 +244,7 @@ export default function SkillsLearnScreen() {
       toast.showError(
         error.response?.data?.error || "Failed to complete profile",
       );
+      console.log("Error", error);
     } finally {
       setIsSubmitting(false);
     }
