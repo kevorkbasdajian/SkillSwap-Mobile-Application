@@ -4,15 +4,18 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabParamList } from "./types";
 import { COLORS, FONT_SIZES } from "../constants";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import HomeScreen from "../screens/home/HomeScreen";
 import GroupsScreen from "../screens/groups/GroupsScreen";
+import SearchScreen from "../screens/home/SearchScreen";
 // import SessionsScreen from "../screens/sessions/SessionsScreen";
 // import ProfileScreen from "../screens/profile/ProfileScreen";
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
+  const insets = useSafeAreaInsets(); // get device safe area insets
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -23,8 +26,8 @@ export default function TabNavigator() {
           backgroundColor: COLORS.white,
           borderTopWidth: 1,
           borderTopColor: COLORS.lightGray,
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: 8 + insets.bottom,
           paddingTop: 8,
         },
         tabBarLabelStyle: {
@@ -54,15 +57,16 @@ export default function TabNavigator() {
           ),
         }}
       />
-      {/* <Tab.Screen
-        name="Sessions"
-        component={SessionsScreen}
+      <Tab.Screen
+        name="Search"
+        component={SearchScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="calendar" size={size} color={color} />
+            <MaterialCommunityIcons name="magnify" size={size} color={color} />
           ),
         }}
       />
+      {/*
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}

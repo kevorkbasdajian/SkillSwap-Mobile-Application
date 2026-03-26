@@ -97,7 +97,7 @@ export const skillsAPI = {
 
   //4- Toggle Skill Favorite
   setSkillFavorite: async (skillId: Number) => {
-    const response = await api.patch(`skills/user/${skillId}/favorite`);
+    const response = await api.patch(`/skills/user/${skillId}/favorite`);
     return response.data;
   },
 };
@@ -106,7 +106,7 @@ export const skillsAPI = {
 export const groupsAPI = {
   //1- Get User Groups by Role
   getUserGroupsByRole: async (role: "teacher" | "learner") => {
-    const response = await api.get(`groups/my-groups/${role}`);
+    const response = await api.get(`/groups/my-groups/${role}`);
     return response.data;
   },
 };
@@ -119,6 +119,42 @@ export const userAPI = {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+};
+
+//Search API
+export const searchAPI = {
+  //Get Recent Searches
+  getRecentSearches: async () => {
+    const response = await api.get("/users/recent-searches");
+    return response.data;
+  },
+
+  //Search users by name
+  searchUsers: async (query: string) => {
+    const response = await api.get(
+      `/users/search/?q=${encodeURIComponent(query)}`,
+    );
+    return response.data;
+  },
+
+  //Save a recent search
+  saveRecentSearch: async (searchedUserId: string) => {
+    const response = await api.post(`/users/recent-searches/${searchedUserId}`);
+    return response.data;
+  },
+
+  //Remove a recent search
+  removeRecentSearch: async (searchedUserId: string) => {
+    const response = await api.delete(
+      `/users/recent-searches/${searchedUserId}`,
+    );
+  },
+
+  // Clear all recent searches
+  clearRecentSearches: async () => {
+    const response = await api.delete("/users/recent-searches");
     return response.data;
   },
 };

@@ -42,6 +42,7 @@ export type TabParamList = {
   Groups: undefined;
   Sessions: undefined;
   Profile: undefined;
+  Search: undefined;
 };
 
 // Root Navigator Routes
