@@ -148,7 +148,8 @@ export default function SignUpScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        errors.fullName && { color: COLORS.darkBlue },
+                        errors.fullName &&
+                          touched.fullName && { color: COLORS.darkBlue },
                       ]}
                     >
                       FullName
@@ -191,8 +192,9 @@ export default function SignUpScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        (errors.email ||
-                          !errorMessage.includes("Sign up failed")) && {
+                        ((errors.email && touched.email) ||
+                          (errorMessage &&
+                            !errorMessage.includes("Sign up failed"))) && {
                           color: COLORS.darkBlue,
                         },
                       ]}
@@ -211,7 +213,8 @@ export default function SignUpScreen() {
                         textStyle={{
                           color:
                             errors.email ||
-                            !errorMessage.includes("Sign up failed")
+                            (errorMessage &&
+                              !errorMessage.includes("Sign up failed"))
                               ? COLORS.error
                               : COLORS.darkBlue,
                         }}
@@ -229,7 +232,8 @@ export default function SignUpScreen() {
                             size={20}
                             color={
                               (touched.email && errors.email) ||
-                              !errorMessage.includes("Sign up failed")
+                              (errorMessage &&
+                                !errorMessage.includes("Sign up failed"))
                                 ? COLORS.error
                                 : COLORS.darkBlue
                             }
@@ -244,7 +248,8 @@ export default function SignUpScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        errors.password && { color: COLORS.darkBlue },
+                        errors.password &&
+                          touched.password && { color: COLORS.darkBlue },
                       ]}
                     >
                       Password
@@ -276,7 +281,8 @@ export default function SignUpScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        errors.confirmPassword && { color: COLORS.darkBlue },
+                        errors.confirmPassword &&
+                          touched.confirmPassword && { color: COLORS.darkBlue },
                       ]}
                     >
                       Confirm Password

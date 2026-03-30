@@ -10,6 +10,7 @@ import TabNavigator from "./TabNavigator";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { COLORS } from "../constants";
 import ProfileCompletionNavigator from "./ProfileCompletionNavigator";
+import UserProfileScreen from "../screens/home/UserProfileScreen";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -42,8 +43,14 @@ export default function RootNavigator() {
           component={ProfileCompletionNavigator}
         />
       ) : (
-        // Logged in and profile complete - show main app
-        <Stack.Screen name="Main" component={TabNavigator} />
+        <>
+          <Stack.Screen name="Main" component={TabNavigator} />
+          <Stack.Screen
+            name="UserProfile"
+            component={UserProfileScreen}
+            options={{ headerShown: false }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );

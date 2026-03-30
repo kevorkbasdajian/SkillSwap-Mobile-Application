@@ -186,12 +186,14 @@ const userService = {
       id,
       full_name,
       nick_name,
+      biography,
       profile_image_url
     ),
     addressee:users!friends_addressee_id_fkey (
       id,
       full_name,
       nick_name,
+      biography,
       profile_image_url
     )
   `,
@@ -199,23 +201,32 @@ const userService = {
       .or(`requester_id.eq.${targetUserId},addressee_id.eq.${targetUserId}`)
       .eq("status", "accepted");
 
-    //Format the information to only include the info of the user's friends
-    const formatted = user_friends.map((row) => {
-      return row.requester.id === targetUserId ? row.addressee : row.requester;
-    });
+    let formatted = null;
+    if (user_friends != null && user_friends.length != 0) {
+      //Format the information to only include the info of the user's friends
+      formatted = user_friends
+        .map((row) => {
+          return row.requester.id === targetUserId
+            ? row.addressee
+            : row.requester;
+        })
+        .filter((friend) => friend.id !== currentUserId);
+    }
 
     // Get friendship status with current user
     const { data: friendship } = await supabase
       .from("friends")
       .select("id,status,requester_id")
       .or(
-        `and(requester_id.eq.${currentUserId},addressee_id.eq${targetUserId}),` +
+        `and(requester_id.eq.${currentUserId},addressee_id.eq.${targetUserId}),` +
           `and(requester_id.eq.${targetUserId},addressee_id.eq.${currentUserId})`,
       )
       .single();
     //Determine friend button state
     let friendshipStatus = "none";
+    let friendshipId = null;
     if (friendship) {
+      friendshipId = friendship.id;
       if (friendship.status === "accepted") {
         friendshipStatus = "friends";
       } else if (friendship.status === "pending") {
@@ -239,6 +250,8 @@ const userService = {
         friends: friendsCount || 0,
       },
       friendshipStatus,
+      friendshipId: friendshipId,
+
       skills: {
         teaching: skills.filter((s) => s.role === "teacher"),
         learning: skills.filter((s) => s.role === "learner"),

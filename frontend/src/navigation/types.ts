@@ -50,6 +50,7 @@ export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList>;
   ProfileCompletion: NavigatorScreenParams<ProfileCompletionParamList>;
   Main: NavigatorScreenParams<TabParamList>;
+  UserProfile: { userId: string };
 };
 
 // Type helpers for navigation

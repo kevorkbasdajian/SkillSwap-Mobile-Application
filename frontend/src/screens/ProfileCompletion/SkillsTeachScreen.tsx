@@ -49,6 +49,7 @@ interface Skill {
   icon_url: string;
   is_default: boolean;
   created_at: Date;
+  proficiency_level?: Number;
 }
 
 export default function SkillsTeachScreen() {
@@ -65,6 +66,8 @@ export default function SkillsTeachScreen() {
   const [newSkillName, setNewSkillName] = useState("");
   //New skill's Icon
   const [newSkillIcon, setNewSkillIcon] = useState("star");
+  //New skill proficiency level
+  const [level, setLevel] = useState<Number | null>();
 
   //To store error message if fetching all skills from backend fails
   //For loading state
@@ -137,6 +140,7 @@ export default function SkillsTeachScreen() {
 
       if (response.success) {
         toast.showSuccess("Skill created successfully!");
+        response.data.proficiency_level = level;
         //Add new skill to list
         setAllSkills([...allSkills, response.data]);
         //Automatically select the new skill and add it to the selected list
@@ -151,6 +155,7 @@ export default function SkillsTeachScreen() {
         //Reset fields
         setNewSkillName("");
         setNewSkillIcon("star");
+        setLevel(null);
       }
     } catch (error: any) {
       toast.showError(error.response?.data?.error || "Failed to create skill");
@@ -302,6 +307,8 @@ export default function SkillsTeachScreen() {
             onClose={() => {
               setShowAddSkillModal(false);
               setNewSkillName("");
+              setNewSkillIcon("star");
+              setLevel(null);
             }}
           >
             <View style={styles.modalContent}>
@@ -330,6 +337,46 @@ export default function SkillsTeachScreen() {
                 }
                 autoCapitalize={"none"}
               />
+              <View>
+                <Text
+                  style={[
+                    { textAlign: "left", marginLeft: SPACING.md },
+                    styles.modalLabel,
+                  ]}
+                >
+                  Choose Proficiency Level
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    justifyContent: "center",
+                  }}
+                >
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      onPress={() => setLevel(num)}
+                      style={[
+                        styles.numberContainer,
+                        level != num && {
+                          borderColor: COLORS.lightOrange,
+                          backgroundColor: COLORS.skinToneOrange,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.number,
+                          level != num && { color: COLORS.midBlue },
+                        ]}
+                      >
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
 
               <Button
                 title="Create Skill"
@@ -469,6 +516,22 @@ const styles = StyleSheet.create({
     color: COLORS.darkBlue,
     marginBottom: SPACING.xs,
   },
+  numberContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: COLORS.darkBlue,
+    borderWidth: 2,
+    backgroundColor: COLORS.midBlue,
+    marginTop: 5,
+  },
+  number: {
+    color: COLORS.skinToneOrange,
+  },
+
   createButton: {
     marginTop: SPACING.md,
   },

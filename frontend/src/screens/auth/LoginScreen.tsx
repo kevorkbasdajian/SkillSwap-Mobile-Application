@@ -150,7 +150,8 @@ export default function LoginScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        errors.email && { color: COLORS.darkBlue },
+                        errors.email &&
+                          touched.email && { color: COLORS.darkBlue },
                       ]}
                     >
                       Email
@@ -193,7 +194,8 @@ export default function LoginScreen() {
                     <Text
                       style={[
                         styles.inputLabel,
-                        errors.password && { color: COLORS.darkBlue },
+                        errors.password &&
+                          touched.password && { color: COLORS.darkBlue },
                       ]}
                     >
                       Password

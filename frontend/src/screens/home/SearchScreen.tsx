@@ -7,7 +7,7 @@ import {
 } from "@/src/constants";
 import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { searchAPI } from "@/src/services/api";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -22,6 +22,8 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList, TabParamList } from "@/src/navigation/types";
 
 export default function SearchScreen() {
   //Interface for searched User
@@ -39,7 +41,13 @@ export default function SearchScreen() {
     searched_user: SearchedUser;
   }
 
+  //type for navigation
+  type searchScreenNavigationProp =
+    NativeStackNavigationProp<RootStackParamList>;
+
   //---------------Constants-----------
+  //For navigation
+  const navigation = useNavigation<searchScreenNavigationProp>();
   //Store Recent Searches
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   //Store search query
@@ -130,18 +138,15 @@ export default function SearchScreen() {
   const handleUserClick = async (user: SearchedUser) => {
     try {
       await searchAPI.saveRecentSearch(user.id);
-
-      //Reload recent searches to update list
       loadRecentSearches();
     } catch (error) {
       console.error("Failed to save recent search:", error);
     }
 
-    //TODO
-    console.log("Navigate to user profile", user.id);
+    navigation.navigate("UserProfile", { userId: user.id });
   };
 
-  //This function is to remove recent searche
+  //This function is to remove recent search
   const handleRemoveRecent = async (searchId: number, userId: string) => {
     try {
       await searchAPI.removeRecentSearch(userId);

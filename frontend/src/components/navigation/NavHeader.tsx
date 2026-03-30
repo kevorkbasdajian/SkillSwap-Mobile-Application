@@ -20,7 +20,7 @@ interface headerProps {
   style?: ViewStyle;
   showBackButton?: boolean;
   handleOnPress?(): void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 export const Header: React.FC<headerProps> = ({
   title,

@@ -113,12 +113,18 @@ export const groupsAPI = {
 
 //User API
 export const userAPI = {
+  //1-Complete the profile by updating profile info, and subscribing to skills for learning and teaching
   completeProfile: async (formData: FormData) => {
     const response = await api.put("/users/complete-profile", formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     });
+    return response.data;
+  },
+  //2- Get Public Profile of a user
+  getPublicProfile: async (userId: String) => {
+    const response = await api.get(`/users/${userId}/profile`);
     return response.data;
   },
 };
@@ -155,6 +161,21 @@ export const searchAPI = {
   // Clear all recent searches
   clearRecentSearches: async () => {
     const response = await api.delete("/users/recent-searches");
+    return response.data;
+  },
+};
+
+//Friend API
+export const friendAPI = {
+  //Send a friend request
+  sendFriendRequest: async (addresseeId: string) => {
+    const response = await api.post(`/friends/request/${addresseeId}`);
+    return response.data;
+  },
+
+  //Accept friend request
+  acceptFriendRequest: async (friendshipId: number) => {
+    const response = await api.patch(`/friends/${friendshipId}/accept`);
     return response.data;
   },
 };

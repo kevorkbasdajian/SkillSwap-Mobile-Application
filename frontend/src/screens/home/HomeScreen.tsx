@@ -30,6 +30,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Input } from "@/src/components/common/Input";
 import { Modal } from "@/src/components/common/Modal";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import LottieView from "lottie-react-native";
 
 //Type for User role
 type UserRole = "teacher" | "learner";
@@ -66,6 +67,8 @@ export default function HomeScreen() {
   const [userGroups, setUserGroups] = useState<Number[]>([]);
   //To store the search query
   const [searchQuery, setSearchQuery] = useState("");
+  //To filter based on favorites
+  const [showFavorites, setShowFavorites] = useState(false);
   //For loading
   const [isLoading, setIsLoading] = useState(true);
   //For the + button in the bottom tabs section
@@ -90,6 +93,8 @@ export default function HomeScreen() {
 
   //Filter skills when search query changes
   useEffect(() => {
+    console.log("Favorites state is", showFavorites);
+
     if (searchQuery.trim() === "") {
       setFilteredSkills(userSkills);
     } else {
@@ -98,7 +103,13 @@ export default function HomeScreen() {
       );
       setFilteredSkills(filtered);
     }
-  }, [searchQuery, userSkills]);
+    if (showFavorites) {
+      const filtered = filteredSkills.filter(
+        (skill) => skill.is_favorite == true,
+      );
+      setFilteredSkills(filtered);
+    }
+  }, [searchQuery, showFavorites, userSkills]);
 
   //---------------Functions-----------
   //1-Load the user role used initially
@@ -133,7 +144,6 @@ export default function HomeScreen() {
     try {
       const response = await groupsAPI.getUserGroupsByRole(userRole);
       const userGroupsSkillId = response.data.map((s: any) => s.skill.id);
-      console.log("Id array", userGroupsSkillId);
       if (response.success) {
         setUserGroups(userGroupsSkillId);
       }
@@ -309,6 +319,12 @@ export default function HomeScreen() {
               color={COLORS.white}
             />
           </TouchableOpacity>
+          <Button
+            title="Sign Out"
+            onPress={() => {
+              AsyncStorage.clear();
+            }}
+          />
         </Header>
 
         <ScrollView
@@ -318,9 +334,11 @@ export default function HomeScreen() {
         >
           {/* Welcome Image */}
           <View style={styles.welcomeImageContainer}>
-            <Image
-              source={require("../../assets/images/homeScreenIllustration.png")}
-              style={styles.welcomeImage}
+            <LottieView
+              source={require("../../assets/animations/homePageAnimation.json")}
+              autoPlay
+              loop
+              style={styles.animation}
             />
             <View style={styles.welcomeTextOverlay}>
               <Text style={styles.welcomeText}>DIVE</Text>
@@ -330,23 +348,46 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.mainContent}>
-            {/* Search Bar */}
-            <Input
-              value={searchQuery}
-              inputStyle={styles.searchInput}
-              placeholder="Search"
-              placeholderTextColor={COLORS.midBlack}
-              textStyle={{ color: COLORS.darkBlue }}
-              leftIcon={
-                <MaterialCommunityIcons
-                  name="magnify"
-                  size={24}
-                  color={COLORS.midBlack}
-                  style={styles.searchIcon}
+            <View style={styles.optionss}>
+              {/* Search Bar */}
+              <View
+                style={{
+                  flex: 1,
+                }}
+              >
+                <Input
+                  value={searchQuery}
+                  inputStyle={styles.searchInput}
+                  placeholder="Search"
+                  placeholderTextColor={COLORS.midBlack}
+                  textStyle={{ color: COLORS.darkBlue }}
+                  leftIcon={
+                    <MaterialCommunityIcons
+                      name="magnify"
+                      size={24}
+                      color={COLORS.midBlack}
+                      style={styles.searchIcon}
+                    />
+                  }
+                  onChangeText={setSearchQuery}
                 />
-              }
-              onChangeText={setSearchQuery}
-            />
+              </View>
+
+              {/* Filter by Favorites */}
+              <TouchableOpacity
+                style={[
+                  styles.favoriteFilter,
+                  showFavorites && { backgroundColor: COLORS.lightOrange },
+                ]}
+                onPress={() => setShowFavorites(!showFavorites)}
+              >
+                <MaterialCommunityIcons
+                  name={showFavorites ? "cards-heart" : "cards-heart-outline"}
+                  color={showFavorites ? COLORS.lightBlue : COLORS.lightOrange}
+                  size={24}
+                />
+              </TouchableOpacity>
+            </View>
 
             {/* Skills Count */}
             <Text style={styles.skillsCountText}>
@@ -494,7 +535,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    margin: 10,
   },
   welcomeImage: {
     width: 180,
@@ -502,15 +542,19 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.xxxl,
     flex: 2,
   },
+  animation: {
+    width: 240,
+    height: 240,
+  },
   welcomeTextOverlay: {
     flex: 1,
   },
   welcomeText: {
     fontFamily: FONT_USAGE.heading,
-    fontSize: FONT_SIZES.huge,
+    fontSize: FONT_SIZES.massive,
     color: COLORS.midBlue,
     fontWeight: "700",
-    lineHeight: 32,
+    lineHeight: 36,
     textShadowColor: COLORS.darkBlue,
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1,
@@ -535,7 +579,6 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
     color: COLORS.darkBlue,
     borderRadius: BORDER_RADIUS.round,
-    marginTop: 10,
   },
   mainContent: {
     flex: 1,
@@ -544,7 +587,22 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.xxl,
     paddingInline: 10,
   },
-
+  optionss: {
+    marginTop: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 5,
+  },
+  favoriteFilter: {
+    marginBottom: SPACING.lg,
+    justifyContent: "center",
+    alignItems: "center",
+    width: 39,
+    height: 39,
+    borderRadius: BORDER_RADIUS.xxxl,
+    backgroundColor: COLORS.lightBlue,
+  },
   skillsCountText: {
     marginLeft: "auto",
     right: 10,

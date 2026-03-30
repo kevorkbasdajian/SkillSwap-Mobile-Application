@@ -51,6 +51,7 @@ interface Skill {
   icon_url: string;
   is_default: boolean;
   created_at: Date;
+  proficiency_level?: Number;
 }
 
 export default function SkillsLearnScreen() {
@@ -67,6 +68,8 @@ export default function SkillsLearnScreen() {
   const [newSkillName, setNewSkillName] = useState("");
   //New skill's Icon
   const [newSkillIcon, setNewSkillIcon] = useState("star");
+  //New skill's proficiency level
+  const [level, setLevel] = useState<Number | null>(null);
   //For loading state
   const [isLoading, setIsLoading] = useState(true);
   //For submitting profile
@@ -145,6 +148,7 @@ export default function SkillsLearnScreen() {
       if (response.success) {
         //Show success message
         toast.showSuccess("Skill created successfulyy!");
+        response.data.proficiency_level = level;
         //Add the new skill to the list of all skills
         setAllSkills([...allSkills, response.data]);
         //Automatically select the new skill
@@ -157,6 +161,7 @@ export default function SkillsLearnScreen() {
         //Reset fields
         setNewSkillIcon("star");
         setNewSkillName("");
+        setLevel(null);
       }
     } catch (error: any) {
       toast.showError(error.response?.data?.error || "Failed to create skill");
@@ -206,14 +211,14 @@ export default function SkillsLearnScreen() {
       const skillsToTeach = teachSkills.map((skill: Skill) => ({
         skill_id: skill.id,
         is_default: skill.is_default,
-        proficiency_level: 3,
+        proficiency_level: skill.proficiency_level,
       }));
 
       //Format skills to learn
       const skillsToLearn = selectedSkills.map((skill: Skill) => ({
         skill_id: skill.id,
         is_default: skill.is_default,
-        proficiency_level: 2,
+        proficiency_level: skill.proficiency_level,
       }));
 
       formData.append("skills_to_teach", JSON.stringify(skillsToTeach));
@@ -374,6 +379,7 @@ export default function SkillsLearnScreen() {
             onClose={() => {
               setShowAddSkillModal(false);
               setNewSkillName("");
+              setLevel(null);
             }}
           >
             <View style={styles.modalContent}>
@@ -401,6 +407,48 @@ export default function SkillsLearnScreen() {
                 }
                 autoCapitalize="none"
               />
+
+              <View>
+                <Text
+                  style={[
+                    { textAlign: "left", marginLeft: SPACING.md },
+                    styles.modalLabel,
+                  ]}
+                >
+                  Choose Proficiency Level
+                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 10,
+                    justifyContent: "center",
+                  }}
+                >
+                  {[1, 2, 3, 4, 5].map((num) => (
+                    <TouchableOpacity
+                      key={num}
+                      onPress={() => setLevel(num)}
+                      style={[
+                        styles.numberContainer,
+                        level != num && {
+                          borderColor: COLORS.lightOrange,
+                          backgroundColor: COLORS.skinToneOrange,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.number,
+                          level != num && { color: COLORS.midBlue },
+                        ]}
+                      >
+                        {num}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
               <Button
                 title="Create Skill"
                 onPress={handleCreateSkill}
@@ -525,5 +573,20 @@ const styles = StyleSheet.create({
   },
   createButton: {
     marginTop: SPACING.md,
+  },
+  numberContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    borderColor: COLORS.darkBlue,
+    borderWidth: 2,
+    backgroundColor: COLORS.midBlue,
+    marginTop: 5,
+  },
+  number: {
+    color: COLORS.skinToneOrange,
   },
 });
