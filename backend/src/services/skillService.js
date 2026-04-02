@@ -24,7 +24,6 @@ const skillService = {
 
   //Create new custom skill
   createSkill: async (data) => {
-    console.log("Data is", data);
     const { name, icon_url, is_default = false } = data;
     //Check if skill with same name already exists
     const { data: existsingSkill } = await supabase
@@ -52,6 +51,7 @@ const skillService = {
 
   // Add selected skills to User's skills
   addUserSkills: async (userId, skills) => {
+    console.log("Skills are", skills);
     //Generate random proficiency level (1-5)
     const userSkillsData = skills.map((skill) => ({
       user_id: userId,

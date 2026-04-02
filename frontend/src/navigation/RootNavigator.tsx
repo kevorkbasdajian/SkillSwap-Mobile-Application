@@ -11,6 +11,7 @@ import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { COLORS } from "../constants";
 import ProfileCompletionNavigator from "./ProfileCompletionNavigator";
 import UserProfileScreen from "../screens/home/UserProfileScreen";
+import AddNewSkillModal from "../screens/home/AddNewSkillModal";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -49,6 +50,14 @@ export default function RootNavigator() {
             name="UserProfile"
             component={UserProfileScreen}
             options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="AddNewSkillModal"
+            component={AddNewSkillModal}
+            options={{
+              presentation: "modal",
+              headerShown: false,
+            }}
           />
         </>
       )}

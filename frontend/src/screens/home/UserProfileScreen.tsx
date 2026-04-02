@@ -67,7 +67,7 @@ interface UserProfile {
     friends: number;
   };
   friendshipStatus: "none" | "pending_sent" | "pending_received" | "friends";
-  friendshipId: number;
+  friendshipId: string;
   skills: {
     teaching: UserSkill[];
     learning: UserSkill[];

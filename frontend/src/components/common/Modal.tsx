@@ -11,6 +11,7 @@ import {
   Platform,
   Pressable,
   Modal as RNModal,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -77,7 +78,14 @@ export const Modal: React.FC<ModalProps> = ({
             )}
 
             {/* Content */}
-            <View style={styles.content}>{children}</View>
+            {/* <View style={styles.content}>{children}</View> */}
+            <ScrollView
+              contentContainerStyle={styles.content}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {children}
+            </ScrollView>
           </Pressable>
         </Pressable>
       </KeyboardAvoidingView>

@@ -31,6 +31,8 @@ import { Input } from "@/src/components/common/Input";
 import { Modal } from "@/src/components/common/Modal";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import LottieView from "lottie-react-native";
+import { useNotifications } from "@/src/context/NotificationContext";
+import { NotificationPanel } from "@/src/components/features/NotificationPanel";
 
 //Type for User role
 type UserRole = "teacher" | "learner";
@@ -74,6 +76,9 @@ export default function HomeScreen() {
   //For the + button in the bottom tabs section
   const [showCreateModal, setShowCreateModal] = useState(false);
 
+  const [showNotifications, setShowNotifications] = useState(false);
+  const { unreadCount } = useNotifications();
+
   //---------------Hooks-----------
 
   //Load user role from AsyncStorage on mount
@@ -93,8 +98,6 @@ export default function HomeScreen() {
 
   //Filter skills when search query changes
   useEffect(() => {
-    console.log("Favorites state is", showFavorites);
-
     if (searchQuery.trim() === "") {
       setFilteredSkills(userSkills);
     } else {
@@ -498,6 +501,25 @@ export default function HomeScreen() {
         type={toast.type}
         onDismiss={toast.hideToast}
       />
+      {/* Notification Panel */}
+      {showNotifications && (
+        <NotificationPanel onClose={() => setShowNotifications(false)} />
+      )}
+
+      {/* Floating Notification Button */}
+      <TouchableOpacity
+        style={styles.floatingButton}
+        onPress={() => setShowNotifications(!showNotifications)}
+      >
+        <MaterialCommunityIcons name="bell" size={26} color={COLORS.white} />
+        {unreadCount > 0 && (
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </Text>
+          </View>
+        )}
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -717,6 +739,40 @@ const styles = StyleSheet.create({
     color: COLORS.darkBlue,
   },
   roleMenuTextActive: {
+    color: COLORS.white,
+  },
+  floatingButton: {
+    position: "absolute",
+    bottom: 30,
+    right: SPACING.xl,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.darkBlue,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 6,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    zIndex: 998,
+  },
+  badgeContainer: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: COLORS.lightOrange,
+    borderRadius: BORDER_RADIUS.round,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    fontFamily: FONT_USAGE.label,
+    fontSize: FONT_SIZES.xs,
     color: COLORS.white,
   },
 });

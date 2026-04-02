@@ -34,6 +34,7 @@ import { StatusBar } from "expo-status-bar";
 import { Header } from "../../components/navigation/NavHeader";
 import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 //Type for the navigation prop
 type ProfileInfoNavigationProp = NativeStackNavigationProp<

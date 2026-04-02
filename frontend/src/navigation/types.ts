@@ -43,6 +43,8 @@ export type TabParamList = {
   Sessions: undefined;
   Profile: undefined;
   Search: undefined;
+  AddNewSkill: undefined;
+  Settings: undefined;
 };
 
 // Root Navigator Routes
@@ -51,6 +53,7 @@ export type RootStackParamList = {
   ProfileCompletion: NavigatorScreenParams<ProfileCompletionParamList>;
   Main: NavigatorScreenParams<TabParamList>;
   UserProfile: { userId: string };
+  AddNewSkillModal: undefined;
 };
 
 // Type helpers for navigation

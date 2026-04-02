@@ -24,7 +24,6 @@ const skillController = {
   createSkill: async (req, res, next) => {
     try {
       const data = req.validatedData;
-      console.log("Validated data is", req.validatedData);
 
       const newskill = await skillService.createSkill(data);
 

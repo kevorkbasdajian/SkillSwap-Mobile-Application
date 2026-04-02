@@ -9,13 +9,37 @@ const userService = {
     const { data: user, error } = await supabase
       .from("users")
       .select(
-        "id,email,full_name,gender,profile_image_url,education_level,date_of_birth",
+        "id,email,full_name,nick_name,gender,profile_image_url,education_level,date_of_birth,biography,created_at, gender",
       )
       .eq("id", userId)
       .single();
     if (error || !user) {
       throw new Error("User not found");
     }
+
+    //Get teaching count
+    const { count: teachingCount } = await supabase
+      .from("user_skills")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("role", "teacher");
+
+    //Get learning count
+    const { count: learningCount } = await supabase
+      .from("user_skills")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("role", "learner");
+
+    //Get friends count
+    const { count: friendsCount } = await supabase
+      .from("friends")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "accepted")
+      .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+    user.teachingCount = teachingCount;
+    user.learningCount = learningCount;
+    user.friendsCount = friendsCount;
     return user;
   },
   updateUserProfile: async (userId, updateData, file) => {
@@ -48,15 +72,14 @@ const userService = {
     const { data: updatedUser, error } = await supabase
       .from("users")
       .update(filteredData)
-      .eq("id", userId)
-      .select(
-        "id, email, full_name, nick_name, gender, profile_image_url, education_level, biography, updated_at",
-      )
-      .single();
+      .eq("id", userId);
+
     if (error) {
       throw new Error(`Update failed: ${error.message}`);
     }
-    return updatedUser;
+
+    const user = userService.getUserProfile(userId);
+    return user;
   },
 
   //Complete User Profile(During initial Setup)

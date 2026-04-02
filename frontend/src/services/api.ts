@@ -100,6 +100,11 @@ export const skillsAPI = {
     const response = await api.patch(`/skills/user/${skillId}/favorite`);
     return response.data;
   },
+  //5-Add skill to a user's profile
+  addSkillToProfile: async (skill: any) => {
+    const response = await api.post("/skills/user", { skills: [skill] });
+    return response.data;
+  },
 };
 
 //Groups API
@@ -125,6 +130,18 @@ export const userAPI = {
   //2- Get Public Profile of a user
   getPublicProfile: async (userId: String) => {
     const response = await api.get(`/users/${userId}/profile`);
+    return response.data;
+  },
+  //3-fetchOwnProfile for the profile page
+  fetchOwnProfile: async () => {
+    const response = await api.get("/users/profile");
+    return response.data;
+  },
+  //4- Update User Profile
+  updateUserProfile: async (formData: FormData) => {
+    const response = await api.put("/users/profile", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     return response.data;
   },
 };
@@ -174,8 +191,37 @@ export const friendAPI = {
   },
 
   //Accept friend request
-  acceptFriendRequest: async (friendshipId: number) => {
+  acceptFriendRequest: async (friendshipId: string) => {
     const response = await api.patch(`/friends/${friendshipId}/accept`);
+    return response.data;
+  },
+  //Get All friends
+  getAllFriends: async () => {
+    const response = await api.get("/friends/");
+    return response.data;
+  },
+  //Remove a friend
+  removeFriend: async (friendshipId: string) => {
+    const response = await api.delete(`/friends/${friendshipId}`);
+    return response.data;
+  },
+  rejectFriendRequest: async (friendshipId: string) => {
+    const response = await api.delete(`/friends/${friendshipId}/reject`);
+    return response.data;
+  },
+};
+
+export const notificationsAPI = {
+  getAll: async () => {
+    const response = await api.get("/notifications");
+    return response.data;
+  },
+  markAsRead: async (notificationId: string) => {
+    const response = await api.patch(`/notifications/${notificationId}/read`);
+    return response.data;
+  },
+  markAllAsRead: async () => {
+    const response = await api.patch("/notifications/read-all");
     return response.data;
   },
 };

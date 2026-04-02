@@ -8,6 +8,7 @@ import { LinkingOptions } from "@react-navigation/native";
 import { RootStackParamList } from "./src/navigation/types";
 import Toast from "react-native-toast-message";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NotificationProvider } from "./src/context/NotificationContext";
 const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ["skillswap://", "https://skillswap.app", "http://skillswap.app"],
   config: {
@@ -36,12 +37,14 @@ export default function App() {
   return (
     <FontLoader>
       <AuthProvider>
-        <SafeAreaProvider>
-          <NavigationContainer linking={linking}>
-            <StatusBar style="dark" />
-            <RootNavigator />
-          </NavigationContainer>
-        </SafeAreaProvider>
+        <NotificationProvider>
+          <SafeAreaProvider>
+            <NavigationContainer linking={linking}>
+              <StatusBar style="dark" />
+              <RootNavigator />
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </NotificationProvider>
       </AuthProvider>
     </FontLoader>
   );
