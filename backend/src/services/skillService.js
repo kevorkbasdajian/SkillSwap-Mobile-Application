@@ -21,6 +21,18 @@ const skillService = {
 
     return skills;
   },
+  //Get all skills including custom ones
+  getAllSkillsIncludingCustom: async () => {
+    const { data: skills, error } = await supabase
+      .from("skills")
+      .select("id, name, icon_url, is_default")
+      .order("name", { ascending: true });
+
+    if (error) {
+      throw new Error(`Failed to fetch skills: ${error.message}`);
+    }
+    return skills;
+  },
 
   //Create new custom skill
   createSkill: async (data) => {

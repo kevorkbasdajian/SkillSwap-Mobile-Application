@@ -11,6 +11,7 @@ import SearchScreen from "../screens/home/SearchScreen";
 import { StyleSheet, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ProfileScreen from "../screens/home/ProfileScreen";
+import SettingsScreen from "../screens/home/SettingsScreen";
 // import SessionsScreen from "../screens/sessions/SessionsScreen";
 // import ProfileScreen from "../screens/profile/ProfileScreen";
 
@@ -87,7 +88,7 @@ export default function TabNavigator() {
       />
       <Tab.Screen
         name="Settings"
-        component={() => null}
+        component={SettingsScreen}
         options={{ tabBarItemStyle: { display: "none" } }}
       />
     </Tab.Navigator>

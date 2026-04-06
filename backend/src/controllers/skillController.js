@@ -19,6 +19,18 @@ const skillController = {
       next(error);
     }
   },
+  //Get all skills including custom ones
+  getAllSkillsIncludingCustom: async (req, res, next) => {
+    try {
+      const skills = await skillService.getAllSkillsIncludingCustom();
+      res.status(200).json({
+        success: true,
+        data: skills,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 
   //Create new custom skill
   createSkill: async (req, res, next) => {

@@ -60,7 +60,7 @@ export default function SearchScreen() {
   const [isSearching, setIsSearching] = useState(false);
 
   //for storing timeout for debounced searching
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const searchTimeoutRef = useRef<number | null>(null);
 
   //for error handling
   const toast = useErrorToast();

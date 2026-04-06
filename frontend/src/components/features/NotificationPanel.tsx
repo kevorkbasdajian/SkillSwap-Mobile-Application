@@ -5,7 +5,7 @@ import {
   useNotifications,
 } from "@/src/context/NotificationContext";
 import { useState } from "react";
-import { friendAPI } from "@/src/services/api";
+import { friendAPI, groupsAPI } from "@/src/services/api";
 import {
   ActivityIndicator,
   ScrollView,
@@ -64,11 +64,54 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       setActionLoading(null);
     }
   };
+  const handleGroupJoinAction = async (
+    notification: Notification,
+    action: "approve" | "reject",
+  ) => {
+    setActionLoading(notification.id);
+    try {
+      //Fetch group details to find the pending member's id
+      const res = await groupsAPI.getGroupDetails(
+        notification.notifications.related_entity_id,
+      );
+      if (!res.success) throw new Error("Failed to load group");
+      //Find the pending member whose user_id matches the sender
+      const pendingMember = res.data.pending?.find(
+        (m: any) => m.user?.id === notification.notifications.sender.id,
+      );
+
+      if (!pendingMember) {
+        throw new Error("Join request no longer exists");
+      }
+
+      if (action === "approve") {
+        await groupsAPI.approveMember(
+          notification.notifications.related_entity_id,
+          pendingMember.id,
+        );
+      } else {
+        await groupsAPI.rejectMember(
+          notification.notifications.related_entity_id,
+          pendingMember.id,
+        );
+      }
+      await markAsRead(notification.id);
+      removeNotification(notification.id);
+    } catch (error: any) {
+      console.error("Group action failed:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const renderNotification = (notification: Notification) => {
     const isFriendRequest =
       notification.notifications.related_entity_type === "friendship" &&
       notification.notifications.title === "New Friend Request";
+
+    const isGroupJoinRequest =
+      notification.notifications.related_entity_type === "group" &&
+      notification.notifications.title === "New Join Request";
 
     const isLoading = actionLoading === notification.id;
 
@@ -88,7 +131,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             name={
               notification.notifications.related_entity_type === "friendship"
                 ? "account-plus"
-                : "bell"
+                : notification.notifications.related_entity_type === "group"
+                  ? "account-group"
+                  : "bell"
             }
             size={24}
             color={COLORS.midBlue}
@@ -120,6 +165,34 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                   <TouchableOpacity
                     style={styles.rejectButton}
                     onPress={() => handleRejectFriend(notification)}
+                  >
+                    <Text style={styles.rejectText}>Reject</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+
+          {/* Approve / Reject for group join requests */}
+          {isGroupJoinRequest && (
+            <View style={styles.actionButtons}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color={COLORS.midBlue} />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.acceptButton}
+                    onPress={() =>
+                      handleGroupJoinAction(notification, "approve")
+                    }
+                  >
+                    <Text style={styles.acceptText}>Approve</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.rejectButton}
+                    onPress={() =>
+                      handleGroupJoinAction(notification, "reject")
+                    }
                   >
                     <Text style={styles.rejectText}>Reject</Text>
                   </TouchableOpacity>

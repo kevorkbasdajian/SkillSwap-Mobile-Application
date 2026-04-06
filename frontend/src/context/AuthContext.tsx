@@ -78,6 +78,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   */
   const signOut = async () => {
     try {
+      console.log("Entered Sign Out");
       await AsyncStorage.removeItem("authToken");
       await AsyncStorage.removeItem("user");
       setToken(null);

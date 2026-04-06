@@ -26,7 +26,7 @@ interface InputProps extends TextInputProps {
   isPassword?: boolean;
   textStyle?: TextStyle;
   inputStyle?: ViewStyle;
-  labelStyle?: ViewStyle;
+  labelStyle?: TextStyle;
   ismultiline?: boolean;
 }
 

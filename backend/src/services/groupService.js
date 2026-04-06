@@ -100,13 +100,13 @@ const groupService = {
   },
 
   //Get available groups for learner mode(by skill,filtered by proficiency)
-  getAvailableGroupsForLearner: async (userId, skillId) => {
+  getAvailableGroupsForLearner: async (userId, userSkillId) => {
     //Get user's proficiency for this skill
     const { data: userSkill, error: skillError } = await supabase
       .from("user_skills")
-      .select("proficiency_level")
+      .select("proficiency_level, skill:skill_id(id)")
       .eq("user_id", userId)
-      .eq("skill_id", skillId)
+      .eq("id", userSkillId)
       .eq("role", "learner")
       .single();
     if (skillError || !userSkill) {
@@ -131,7 +131,7 @@ const groupService = {
       .select(
         `id,name,description,difficulty,visibility,cover_image_url,max_participants,created_at,skill:skill_id (id,name,icon_url),group_members (id)`,
       )
-      .eq("skill_id", skillId)
+      .eq("skill_id", userSkill.skill.id)
       .eq("visibility", "public")
       .eq("status", "active")
       .in("difficulty", allowedDifficulties);

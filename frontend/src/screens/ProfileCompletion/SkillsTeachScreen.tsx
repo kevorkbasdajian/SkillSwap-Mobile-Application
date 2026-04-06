@@ -131,6 +131,10 @@ export default function SkillsTeachScreen() {
       toast.showError("Please enter a skill name");
       return;
     }
+    if (!level) {
+      toast.showError("Please select a proficiency level");
+      return;
+    }
     setIsCreatingSkill(true);
     try {
       const response = await skillsAPI.createCustomSkill({

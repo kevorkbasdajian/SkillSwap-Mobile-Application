@@ -12,7 +12,7 @@ import { COLORS } from "../constants";
 import ProfileCompletionNavigator from "./ProfileCompletionNavigator";
 import UserProfileScreen from "../screens/home/UserProfileScreen";
 import AddNewSkillModal from "../screens/home/AddNewSkillModal";
-
+import SkillDetailScreen from "../screens/home/SkillDetailScreen";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
@@ -59,6 +59,7 @@ export default function RootNavigator() {
               headerShown: false,
             }}
           />
+          <Stack.Screen name="SkillDetail" component={SkillDetailScreen} />
         </>
       )}
     </Stack.Navigator>

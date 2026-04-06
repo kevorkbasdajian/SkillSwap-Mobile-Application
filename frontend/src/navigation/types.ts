@@ -54,6 +54,14 @@ export type RootStackParamList = {
   Main: NavigatorScreenParams<TabParamList>;
   UserProfile: { userId: string };
   AddNewSkillModal: undefined;
+  SkillDetail: {
+    userSkillId: string;
+    role: "teacher" | "learner";
+    skillName: string;
+    skillIconUrl: string;
+    proficiencyLevel: number;
+    skillId: string;
+  };
 };
 
 // Type helpers for navigation

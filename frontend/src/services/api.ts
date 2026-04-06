@@ -75,47 +75,6 @@ export const authAPI = {
   },
 };
 
-//Skills API
-export const skillsAPI = {
-  //1-getAllSkills: Retrieve default skills from the backend
-  getAllSkills: async () => {
-    const response = await api.get("/skills");
-    return response.data;
-  },
-
-  //2-createCustomSkill:Create a new skill
-  createCustomSkill: async (data: { name: string; icon_url: string }) => {
-    const response = await api.post("/skills", data);
-    return response.data;
-  },
-
-  //3- Get user's skills by role (teacher/learner)
-  getUserSkillsByRole: async (role: "teacher" | "learner") => {
-    const response = await api.get(`/skills/user/${role}`);
-    return response.data;
-  },
-
-  //4- Toggle Skill Favorite
-  setSkillFavorite: async (skillId: Number) => {
-    const response = await api.patch(`/skills/user/${skillId}/favorite`);
-    return response.data;
-  },
-  //5-Add skill to a user's profile
-  addSkillToProfile: async (skill: any) => {
-    const response = await api.post("/skills/user", { skills: [skill] });
-    return response.data;
-  },
-};
-
-//Groups API
-export const groupsAPI = {
-  //1- Get User Groups by Role
-  getUserGroupsByRole: async (role: "teacher" | "learner") => {
-    const response = await api.get(`/groups/my-groups/${role}`);
-    return response.data;
-  },
-};
-
 //User API
 export const userAPI = {
   //1-Complete the profile by updating profile info, and subscribing to skills for learning and teaching
@@ -142,6 +101,97 @@ export const userAPI = {
     const response = await api.put("/users/profile", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    return response.data;
+  },
+};
+
+//Skills API
+export const skillsAPI = {
+  //1-getAllSkills: Retrieve default skills from the backend
+  getAllSkills: async () => {
+    const response = await api.get("/skills");
+    return response.data;
+  },
+
+  //2-createCustomSkill:Create a new skill
+  createCustomSkill: async (data: { name: string; icon_url: string }) => {
+    const response = await api.post("/skills", data);
+    return response.data;
+  },
+
+  //3- Get user's skills by role (teacher/learner)
+  getUserSkillsByRole: async (role: "teacher" | "learner") => {
+    const response = await api.get(`/skills/user/${role}`);
+    return response.data;
+  },
+
+  //4- Toggle Skill Favorite
+  setSkillFavorite: async (skillId: string) => {
+    const response = await api.patch(`/skills/user/${skillId}/favorite`);
+    return response.data;
+  },
+  //5-Add skill to a user's profile
+  addSkillToProfile: async (skill: any) => {
+    const response = await api.post("/skills/user", { skills: [skill] });
+    return response.data;
+  },
+  //6- Get all skills including custom ones
+  getAllSkillsIncludingCustom: async () => {
+    const response = await api.get("/skills/all");
+    return response.data;
+  },
+};
+
+//Groups API
+export const groupsAPI = {
+  //1- Get User Groups by Role
+  getUserGroupsByRole: async (role: "teacher" | "learner") => {
+    const response = await api.get(`/groups/my-groups/${role}`);
+    return response.data;
+  },
+  //2-For the search results when a learner clicks on a skill
+  getAvailableGroupsForLearner: async (userSkillId: string) => {
+    const response = await api.get(
+      `/groups/skills/${userSkillId}/learner-groups`,
+    );
+    return response.data;
+  },
+  //3-Get the groups of the teacher
+  getTeacherGroups: async (skillId: string) => {
+    const response = await api.get(`/groups/skills/${skillId}/teacher-groups`);
+    return response.data;
+  },
+  //Get the details of a group
+  getGroupDetails: async (groupId: string) => {
+    const response = await api.get(`/groups/${groupId}`);
+    return response.data;
+  },
+  //Join a group
+  joinGroup: async (groupId: number) => {
+    const response = await api.post(`/groups/${groupId}/join`);
+    return response.data;
+  },
+  //create a group
+  createGroup: async (formData: FormData) => {
+    const response = await api.post("groups", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+
+  //Approve Member
+  approveMember: async (groupId: string, memberId: string) => {
+    const response = await api.patch(
+      `/groups/${groupId}/members/${memberId}/approve`,
+    );
+    return response.data;
+  },
+
+  //Reject Member
+  rejectMember: async (groupId: string, memberId: string) => {
+    const response = await api.patch(
+      `/groups/${groupId}/members/${memberId}/reject`,
+    );
     return response.data;
   },
 };

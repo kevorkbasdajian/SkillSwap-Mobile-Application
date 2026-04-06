@@ -11,7 +11,7 @@ import { profileInfoSchema } from "@/src/utils/validationSchemas";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Formik } from "formik";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -35,6 +35,7 @@ import { Header } from "../../components/navigation/NavHeader";
 import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useAuth } from "@/src/context/AuthContext";
 
 //Type for the navigation prop
 type ProfileInfoNavigationProp = NativeStackNavigationProp<
@@ -82,6 +83,10 @@ export default function ProfileInfoScreen() {
     biography: "",
     education_level: "",
   };
+  // const { signOut } = useAuth();
+  // useEffect(() => {
+  //   signOut();
+  // }, []);
 
   //---------------Functions-----------
 
@@ -425,58 +430,52 @@ export default function ProfileInfoScreen() {
               </>
             )}
           </Formik>
-          {showImageOptions && (
-            <Modal
-              visible={showImageOptions}
-              title="Profile Picture Options"
-              showCloseButton={true}
-              size="large"
-              onClose={() => SetShowImageOptions(false)}
-            >
-              <View style={styles.modalOptionsContainer}>
-                <TouchableOpacity
-                  style={styles.modalOption}
-                  onPress={takePhoto}
-                >
-                  <Text style={styles.optionText}>1- Take Photo</Text>
-                  <MaterialCommunityIcons
-                    name="camera"
-                    size={15}
-                    color={COLORS.darkBlue}
-                    style={{ marginBottom: 10 }}
-                  />
-                  <View style={styles.optionBorder} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.modalOption}
-                  onPress={pickImage}
-                >
-                  <Text style={styles.optionText}>2- Choose from library</Text>
-                  <MaterialCommunityIcons
-                    name="image-multiple"
-                    size={15}
-                    color={COLORS.darkBlue}
-                    style={{ marginBottom: 10 }}
-                  />
-                  <View style={styles.optionBorder} />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.modalOption}
-                  onPress={() => SetShowImageOptions(false)}
-                >
-                  <Text style={styles.optionText}>3- Cancel</Text>
-                  <MaterialCommunityIcons
-                    name="cancel"
-                    size={15}
-                    color={COLORS.darkBlue}
-                    style={{ marginBottom: 10 }}
-                  />
-                </TouchableOpacity>
-              </View>
-            </Modal>
-          )}
         </ScrollView>
       </KeyboardAvoidingView>
+      {showImageOptions && (
+        <Modal
+          visible={showImageOptions}
+          title="Profile Picture Options"
+          showCloseButton={true}
+          size="large"
+          onClose={() => SetShowImageOptions(false)}
+        >
+          <View style={styles.modalOptionsContainer}>
+            <TouchableOpacity style={styles.modalOption} onPress={takePhoto}>
+              <Text style={styles.optionText}>1- Take Photo</Text>
+              <MaterialCommunityIcons
+                name="camera"
+                size={15}
+                color={COLORS.darkBlue}
+                style={{ marginBottom: 10 }}
+              />
+              <View style={styles.optionBorder} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalOption} onPress={pickImage}>
+              <Text style={styles.optionText}>2- Choose from library</Text>
+              <MaterialCommunityIcons
+                name="image-multiple"
+                size={15}
+                color={COLORS.darkBlue}
+                style={{ marginBottom: 10 }}
+              />
+              <View style={styles.optionBorder} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={() => SetShowImageOptions(false)}
+            >
+              <Text style={styles.optionText}>3- Cancel</Text>
+              <MaterialCommunityIcons
+                name="cancel"
+                size={15}
+                color={COLORS.darkBlue}
+                style={{ marginBottom: 10 }}
+              />
+            </TouchableOpacity>
+          </View>
+        </Modal>
+      )}
       <ErrorToast
         visible={toast.visible}
         message={toast.message}
@@ -526,9 +525,10 @@ const styles = StyleSheet.create({
   placeholderImageContainer: {
     width: 180,
     height: 180,
-    borderRadius: 60,
+    borderRadius: BORDER_RADIUS.round,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
   },
   placeholderImage: {
     width: "100%",

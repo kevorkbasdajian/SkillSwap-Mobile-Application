@@ -407,7 +407,7 @@ export default function UserProfileScreen() {
             </View>
           </View>
         </View>
-        <View style={{ paddingHorizontal: SPACING.xl, width: "50%" }}>
+        <View style={{ paddingHorizontal: SPACING.xl, width: "70%" }}>
           {profile.biography && (
             <View style={styles.bioContainer}>
               {profile.biography.split("\n").map((line, i) => (
@@ -644,6 +644,7 @@ const styles = StyleSheet.create({
     color: COLORS.lightBlack3,
   },
   bioContainer: {
+    flex: 1,
     width: "100%",
     marginBottom: SPACING.lg,
   },

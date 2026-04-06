@@ -33,13 +33,16 @@ import { ErrorToast } from "@/src/components/common/ErrorToast";
 import LottieView from "lottie-react-native";
 import { useNotifications } from "@/src/context/NotificationContext";
 import { NotificationPanel } from "@/src/components/features/NotificationPanel";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "@/src/navigation/types";
 
 //Type for User role
 type UserRole = "teacher" | "learner";
 
 //Interface for User Skill
 interface UserSkill {
-  id: number;
+  id: string;
   role: "teacher" | "learner";
   proficiency_level: number;
   is_favorite: boolean;
@@ -56,6 +59,8 @@ export default function HomeScreen() {
   //---------------Constants-----------
   const { user } = useAuth();
   const toast = useErrorToast();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   //To store the role of the user
   const [userRole, setUserRole] = useState<UserRole>("learner");
@@ -78,6 +83,7 @@ export default function HomeScreen() {
 
   const [showNotifications, setShowNotifications] = useState(false);
   const { unreadCount } = useNotifications();
+  const { signOut } = useAuth();
 
   //---------------Hooks-----------
 
@@ -173,8 +179,14 @@ export default function HomeScreen() {
 
   //5-handleCardPress: When pressing the card
   const handleCardPress = (skill: UserSkill) => {
-    //TODO
-    console.log("Card pressed:", skill.skills.name, "Role:", userRole);
+    navigation.navigate("SkillDetail", {
+      userSkillId: skill.id,
+      role: skill.role,
+      skillName: skill.skills.name,
+      skillIconUrl: skill.skills.icon_url,
+      proficiencyLevel: skill.proficiency_level,
+      skillId: String(skill.skills.id),
+    });
   };
 
   //6-handleFavorite: Toggle favorite On/Off
@@ -208,9 +220,9 @@ export default function HomeScreen() {
     let status;
     status = userGroups.includes(skill.skills.id);
 
-    if (progressPercentage <= 33) {
-      difficulty = "Easy";
-    } else if (progressPercentage <= 66) {
+    if (skill.proficiency_level <= 2) {
+      difficulty = "Beginner";
+    } else if (skill.proficiency_level == 3) {
       difficulty = "Intermediate";
     } else {
       difficulty = "Difficult";
@@ -325,7 +337,7 @@ export default function HomeScreen() {
           <Button
             title="Sign Out"
             onPress={() => {
-              AsyncStorage.clear();
+              signOut();
             }}
           />
         </Header>

@@ -21,6 +21,9 @@ router.post("/user", skillController.addUserSkills);
 // GET /api/skills/user - Get user's skills
 router.get("/user", skillController.getUserSkills);
 
+// GET /api/skills/all - Get all skills including custom
+router.get("/all", skillController.getAllSkillsIncludingCustom);
+
 //GET /api/skills/user/:role - Get user skills by role
 router.get("/user/:role", skillController.getUserSkillsByRole);
 
