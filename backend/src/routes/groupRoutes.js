@@ -63,6 +63,15 @@ router.delete("/:groupId", groupController.deleteGroup);
 // Join a group
 router.post("/:groupId/join", groupController.joinGroup);
 
+// Invite a friend to a group (teacher only)
+router.post("/:groupId/invite/:invitedUserId", groupController.inviteMember);
+
+// Accept group invite
+router.patch("/:groupId/accept-invite", groupController.acceptGroupInvite);
+
+// Decline group invite
+router.delete("/:groupId/decline-invite", groupController.declineGroupInvite);
+
 // Send notification to group members (teacher only)
 router.post(
   "/:groupId/send",

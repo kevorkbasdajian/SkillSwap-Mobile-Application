@@ -207,7 +207,7 @@ export default function SkillDetailScreen() {
     setIsLoadingDetails(true);
     setShowJoinModal(true);
     try {
-      const res = await groupsAPI.getGroupDetails(group.id);
+      const res = await groupsAPI.getGroupDetails(String(group.id));
       console.log("Response is", res.data);
       if (res.success) setSelectedGroupDetails(res.data);
     } catch {
@@ -473,7 +473,17 @@ export default function SkillDetailScreen() {
       key={group.id}
       style={styles.teacherGroupCard}
       onPress={() =>
-        console.log("TODO: group page", group.id, group.cover_image_url)
+        navigation.navigate("GroupMain", {
+          groupId: group.id,
+          groupName: group.name,
+          skillName: skillName,
+          skillIconUrl: skillIconUrl,
+          coverImageUrl: group.cover_image_url,
+          maxParticipants: group.max_participants,
+          difficulty: group.difficulty,
+          visibility: group.visibility,
+          currentParticipants: group.current_participants,
+        })
       }
       activeOpacity={0.8}
     >

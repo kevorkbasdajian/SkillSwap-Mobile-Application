@@ -178,7 +178,6 @@ export const groupsAPI = {
     });
     return response.data;
   },
-
   //Approve Member
   approveMember: async (groupId: string, memberId: string) => {
     const response = await api.patch(
@@ -186,12 +185,51 @@ export const groupsAPI = {
     );
     return response.data;
   },
-
   //Reject Member
   rejectMember: async (groupId: string, memberId: string) => {
     const response = await api.patch(
       `/groups/${groupId}/members/${memberId}/reject`,
     );
+    return response.data;
+  },
+  //invite a friend to a group
+  inviteMember: async (groupId: number, invitedUserId: string) => {
+    const response = await api.post(
+      `/groups/${groupId}/invite/${invitedUserId}`,
+    );
+    return response.data;
+  },
+  //Accept invitation
+  acceptGroupInvite: async (groupId: string) => {
+    const response = await api.patch(`/groups/${groupId}/accept-invite`);
+    return response.data;
+  },
+  //Decline invitation
+  declineGroupInvite: async (groupId: string) => {
+    const response = await api.delete(`/groups/${groupId}/decline-invite`);
+    return response.data;
+  },
+  //Send notification to group members
+  sendNotificationToMembers: async (
+    groupId: number,
+    data: { title: string; message: string },
+  ) => {
+    const response = await api.post(`/groups/${groupId}/send`, data);
+    return response.data;
+  },
+  //Get Group members of a group
+  getGroupMembers: async (groupId: number) => {
+    const response = await api.get(`/groups/${groupId}/members`);
+    return response.data;
+  },
+  //Get friends with interest
+  getFriendsWithInterest: async (groupId: number) => {
+    const response = await api.get(`/groups/${groupId}/possible-members`);
+    return response.data;
+  },
+  //Remove a group member from a group
+  removeGroupMember: async (groupId: number, memberId: number) => {
+    const response = await api.delete(`/groups/${groupId}/members/${memberId}`);
     return response.data;
   },
 };
@@ -266,12 +304,22 @@ export const notificationsAPI = {
     const response = await api.get("/notifications");
     return response.data;
   },
+  getNotificationHistory: async (groupId: number) => {
+    const response = await api.get(
+      `/notifications/${groupId}/notification-history`,
+    );
+    return response.data;
+  },
   markAsRead: async (notificationId: string) => {
     const response = await api.patch(`/notifications/${notificationId}/read`);
     return response.data;
   },
   markAllAsRead: async () => {
     const response = await api.patch("/notifications/read-all");
+    return response.data;
+  },
+  deleteNotification: async (notificationId: string) => {
+    const response = await api.delete(`/notifications/${notificationId}`);
     return response.data;
   },
 };

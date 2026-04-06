@@ -253,6 +253,54 @@ const groupController = {
       next(error);
     }
   },
+  //invite a friend to a group
+  inviteMember: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId, invitedUserId } = req.params;
+      const result = await groupService.inviteMember(
+        userId,
+        groupId,
+        invitedUserId,
+      );
+      res.status(201).json({
+        success: true,
+        message: "Invitation sent successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  //Accept the invitation
+  acceptGroupInvite: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+      const result = await groupService.acceptGroupInvite(userId, groupId);
+      res.status(200).json({
+        success: true,
+        message: "Invitation accepted",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  //Reject the invitation
+  declineGroupInvite: async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const { groupId } = req.params;
+      const result = await groupService.declineGroupInvite(userId, groupId);
+      res.status(200).json({
+        success: true,
+        message: "Invitation declined",
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 
   // Get group members
   getGroupMembers: async (req, res, next) => {

@@ -13,6 +13,7 @@ import ProfileCompletionNavigator from "./ProfileCompletionNavigator";
 import UserProfileScreen from "../screens/home/UserProfileScreen";
 import AddNewSkillModal from "../screens/home/AddNewSkillModal";
 import SkillDetailScreen from "../screens/home/SkillDetailScreen";
+import GroupNavigator from "./GroupNavigator";
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
@@ -60,6 +61,7 @@ export default function RootNavigator() {
             }}
           />
           <Stack.Screen name="SkillDetail" component={SkillDetailScreen} />
+          <Stack.Screen name="GroupMain" component={GroupNavigator} />
         </>
       )}
     </Stack.Navigator>

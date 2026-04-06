@@ -5,7 +5,7 @@ import {
   useNotifications,
 } from "@/src/context/NotificationContext";
 import { useState } from "react";
-import { friendAPI, groupsAPI } from "@/src/services/api";
+import { friendAPI, groupsAPI, notificationsAPI } from "@/src/services/api";
 import {
   ActivityIndicator,
   ScrollView,
@@ -42,6 +42,8 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         notification.notifications.related_entity_id,
       );
       await markAsRead(notification.id);
+      await notificationsAPI.deleteNotification(notification.id);
+
       removeNotification(notification.id);
     } catch (error) {
       console.error("Failed to accept friend request:", error);
@@ -57,6 +59,8 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         notification.notifications.related_entity_id,
       );
       await markAsRead(notification.id);
+      await notificationsAPI.deleteNotification(notification.id);
+
       removeNotification(notification.id);
     } catch (error) {
       console.error("Failed to reject friend request:", error);
@@ -104,6 +108,31 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     }
   };
 
+  const handleGroupInviteAction = async (
+    notification: Notification,
+    action: "accept" | "decline",
+  ) => {
+    setActionLoading(notification.id);
+    try {
+      if (action === "accept") {
+        await groupsAPI.acceptGroupInvite(
+          notification.notifications.related_entity_id,
+        );
+      } else {
+        await groupsAPI.declineGroupInvite(
+          notification.notifications.related_entity_id,
+        );
+      }
+      await markAsRead(notification.id);
+      await notificationsAPI.deleteNotification(notification.id);
+      removeNotification(notification.id);
+    } catch (error: any) {
+      console.error("Invite action failed:", error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const renderNotification = (notification: Notification) => {
     const isFriendRequest =
       notification.notifications.related_entity_type === "friendship" &&
@@ -112,6 +141,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     const isGroupJoinRequest =
       notification.notifications.related_entity_type === "group" &&
       notification.notifications.title === "New Join Request";
+    const isGroupInvite =
+      notification.notifications.related_entity_type === "group" &&
+      notification.notifications.title === "Group Invitation";
 
     const isLoading = actionLoading === notification.id;
 
@@ -195,6 +227,34 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
                     }
                   >
                     <Text style={styles.rejectText}>Reject</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
+          )}
+
+          {/* Accept / Decline for group invitations */}
+          {isGroupInvite && (
+            <View style={styles.actionButtons}>
+              {isLoading ? (
+                <ActivityIndicator size="small" color={COLORS.midBlue} />
+              ) : (
+                <>
+                  <TouchableOpacity
+                    style={styles.acceptButton}
+                    onPress={() =>
+                      handleGroupInviteAction(notification, "accept")
+                    }
+                  >
+                    <Text style={styles.acceptText}>Accept</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.rejectButton}
+                    onPress={() =>
+                      handleGroupInviteAction(notification, "decline")
+                    }
+                  >
+                    <Text style={styles.rejectText}>Decline</Text>
                   </TouchableOpacity>
                 </>
               )}

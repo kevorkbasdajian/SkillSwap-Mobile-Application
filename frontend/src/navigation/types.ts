@@ -62,6 +62,28 @@ export type RootStackParamList = {
     proficiencyLevel: number;
     skillId: string;
   };
+  GroupMain: {
+    groupId: number;
+    groupName: string;
+    skillName: string;
+    skillIconUrl: string;
+    coverImageUrl: string | null;
+    maxParticipants: number;
+    difficulty: string;
+    visibility: string;
+    currentParticipants: number;
+  };
+};
+
+export type GroupTabParamList = {
+  GroupHome: undefined;
+  GroupChat: undefined;
+  GroupSessions: undefined;
+};
+
+export type GroupStackParamList = {
+  GroupTabs: undefined;
+  GroupNotificationHistory: undefined;
 };
 
 // Type helpers for navigation

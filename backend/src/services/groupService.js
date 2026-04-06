@@ -474,6 +474,128 @@ const groupService = {
     return { message: "Successfully left the group" };
   },
 
+  //Invite a friend to a group (teacher only)
+  inviteMember: async (teacherId, groupId, invitedUserId) => {
+    //Verify teacher is the creator
+    const { data: group, error: groupError } = await supabase
+      .from("groups")
+      .select(
+        "id, name, creator_id, max_participants, group_members(id, user_id, has_joined)",
+      )
+      .eq("id", groupId)
+      .single();
+    if (groupError || !group) throw new Error("Group not found");
+    if (group.creator_id !== teacherId)
+      throw new Error("only the group  creator can invite members");
+
+    //Block if already a member or pending
+    const alreadyExists = group.group_members.find(
+      (m) => m.user_id === invitedUserId,
+    );
+    if (alreadyExists) {
+      throw new Error(
+        alreadyExists.has_joined
+          ? "User is already a member"
+          : "User already has a pending request",
+      );
+    }
+
+    //Check if group is full
+    const approvedCount = group.group_members.filter(
+      (m) => m.has_joined === true,
+    ).length;
+    if (approvedCount >= group.max_participants)
+      throw new Error("Group is full");
+
+    //Create membership row with has_joined = false
+    const { data: membership, error: memberError } = await supabase
+      .from("group_members")
+      .insert([
+        {
+          group_id: groupId,
+          user_id: invitedUserId,
+          role: "learner",
+          has_joined: false,
+        },
+      ])
+      .select()
+      .single();
+    if (memberError)
+      throw new Error(`Failed to invite member: ${memberError.message}`);
+
+    // Get teacher info for notification
+    const { data: teacher } = await supabase
+      .from("users")
+      .select("full_name, nick_name")
+      .eq("id", teacherId)
+      .single();
+    const displayName = teacher.nick_name || teacher.full_name;
+
+    await createNotification({
+      related_entity_type: "group",
+      related_entity_id: groupId,
+      sender_id: teacherId,
+      recipient_id: invitedUserId,
+      title: "Group Invitation",
+      message: `${displayName} invited you to join "${group.name}"`,
+    });
+    return membership;
+  },
+
+  //Accept group invite (invited user)
+  acceptGroupInvite: async (userId, groupId) => {
+    const { data: membership, error } = await supabase
+      .from("group_members")
+      .update({ has_joined: true })
+      .eq("group_id", groupId)
+      .eq("user_id", userId)
+      .eq("has_joined", false)
+      .select()
+      .single();
+
+    if (error || !membership)
+      throw new Error("Invitation not found or already processed");
+
+    // Notify teacher
+    const { data: group } = await supabase
+      .from("groups")
+      .select("name, creator_id")
+      .eq("id", groupId)
+      .single();
+
+    const { data: user } = await supabase
+      .from("users")
+      .select("full_name, nick_name")
+      .eq("id", userId)
+      .single();
+    const displayName = user.nick_name || user.full_name;
+
+    await createNotification({
+      related_entity_type: "group",
+      related_entity_id: groupId,
+      sender_id: userId,
+      recipient_id: group.creator_id,
+      title: "Invitation Accepted",
+      message: `${displayName} accepted your invitation to "${group.name}"`,
+    });
+
+    return membership;
+  },
+
+  // Decline group invite (invited user)
+  declineGroupInvite: async (userId, groupId) => {
+    const { error } = await supabase
+      .from("group_members")
+      .delete()
+      .eq("group_id", groupId)
+      .eq("user_id", userId)
+      .eq("has_joined", false);
+
+    if (error) throw new Error(`Failed to decline invite: ${error.message}`);
+
+    return { message: "Invitation declined" };
+  },
+
   //Update group (teacher only)
   updateGroup: async (teacherId, groupId, updateData, coverImageFile) => {
     // Verify teacher is the creator
@@ -634,8 +756,8 @@ const groupService = {
     if (groupMembers.length === 0) {
       return { message: "The group has no participants." };
     }
-    const users = groupMembers.map((m) => m.user);
-    return users;
+    // const users = groupMembers.map((m) => m.user);
+    return groupMembers;
   },
   getFriendsWithInterest: async (userId, groupId) => {
     //Check that the user is the owner of the group

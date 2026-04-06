@@ -671,6 +671,7 @@ const styles = StyleSheet.create({
     borderRadius: BORDER_RADIUS.round,
   },
   friendsPreviewText: {
+    flex: 1,
     fontFamily: FONT_USAGE.body,
     fontSize: FONT_SIZES.xs,
     color: COLORS.skinToneOrange,
