@@ -84,6 +84,7 @@ export type GroupTabParamList = {
 export type GroupStackParamList = {
   GroupTabs: undefined;
   GroupNotificationHistory: undefined;
+  SessionDetail: { sessionId: string };
 };
 
 // Type helpers for navigation

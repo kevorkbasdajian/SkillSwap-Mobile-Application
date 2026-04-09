@@ -119,7 +119,6 @@ export default function ProfileScreen() {
 
         const response2 = await friendAPI.getAllFriends();
         if (response2.success) {
-          console.log("Friends returned data is", response2.data);
           setFriends(response2.data);
         }
       }
@@ -159,7 +158,6 @@ export default function ProfileScreen() {
         formData.append("education_level", profile.education_level);
 
       const response = await userAPI.updateUserProfile(formData);
-      console.log("Response is", response);
       if (response.success) {
         const normalised = {
           ...response.data,

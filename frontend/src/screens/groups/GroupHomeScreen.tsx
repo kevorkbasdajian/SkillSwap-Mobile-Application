@@ -110,7 +110,6 @@ export default function GroupHomeScreen() {
     setIsLoadingMembers(true);
     try {
       const response = await groupsAPI.getGroupMembers(groupId);
-      console.log("response is", response.data);
       if (response.success) {
         setMembers(Array.isArray(response.data) ? response.data : []);
       }
@@ -563,6 +562,8 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 55,
+    borderWidth: 4,
+    borderColor: COLORS.darkBlue,
   },
   groupCoverPlaceholder: {
     width: 80,
@@ -610,7 +611,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#81C3D780",
     borderRadius: BORDER_RADIUS.lg,
     paddingHorizontal: SPACING.md,
-    // marginBlock: SPACING.xs,
     height: "60%",
   },
   sessionPlaceholderText: {

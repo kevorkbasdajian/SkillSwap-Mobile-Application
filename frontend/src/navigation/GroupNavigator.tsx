@@ -9,6 +9,7 @@ import GroupSessionsScreen from "../screens/groups/GroupSessionsScreen";
 import { GroupProvider } from "../context/GroupContext";
 import GroupNotificationHistoryScreen from "../screens/groups/GroupNotificationHistoryScreen";
 import GroupHomeScreen from "../screens/groups/GroupHomeScreen";
+import SessionDetailScreen from "../screens/groups/SessionDetailScreen";
 
 const Tab = createBottomTabNavigator<GroupTabParamList>();
 const Stack = createNativeStackNavigator<GroupStackParamList>();
@@ -82,6 +83,7 @@ export default function GroupNavigator() {
           name="GroupNotificationHistory"
           component={GroupNotificationHistoryScreen}
         />
+        <Stack.Screen name="SessionDetail" component={SessionDetailScreen} />
       </Stack.Navigator>
     </GroupProvider>
   );

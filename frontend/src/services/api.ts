@@ -324,4 +324,38 @@ export const notificationsAPI = {
   },
 };
 
+//Sessions
+export const sessionsAPI = {
+  getGroupSessions: async (groupId: string) => {
+    const response = await api.get(`/sessions/groups/${groupId}`);
+    return response.data;
+  },
+  createSession: async (groupId: string, formData: FormData) => {
+    const response = await api.post(`/sessions/groups/${groupId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+  getSessionDetails: async (sessionId: string) => {
+    const response = await api.get(`/sessions/${sessionId}`);
+    return response.data;
+  },
+  getSessionArtifacts: async (sessionId: string) => {
+    const response = await api.get(`/sessions/${sessionId}/artifacts`);
+    return response.data;
+  },
+  markSessionCompleted: async (sessionId: string) => {
+    const response = await api.patch(`/sessions/${sessionId}/complete`);
+    return response.data;
+  },
+  cancelSession: async (sessionId: string) => {
+    const response = await api.patch(`/sessions/${sessionId}/cancel`);
+    return response.data;
+  },
+  deleteSession: async (sessionId: string) => {
+    const response = await api.delete(`/sessions/${sessionId}`);
+    return response.data;
+  },
+};
+
 export default api;

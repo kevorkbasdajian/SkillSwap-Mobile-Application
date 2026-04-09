@@ -46,5 +46,6 @@ export const COLORS = {
     lightOrangeToDark: ["#E0B9A1", "#E76F51"],
     darkOrangeToLight: ["#E76F51", "#CE9778"],
     midBlueToLightOrange: ["#3292AF", "#CE9778"],
+    darkBlueToMidLightBlue: ["#2F6690", "#3292AF"],
   },
 };

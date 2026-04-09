@@ -208,7 +208,6 @@ export default function SkillDetailScreen() {
     setShowJoinModal(true);
     try {
       const res = await groupsAPI.getGroupDetails(String(group.id));
-      console.log("Response is", res.data);
       if (res.success) setSelectedGroupDetails(res.data);
     } catch {
       toast.showError("Failed to load group details");
