@@ -482,6 +482,7 @@ export default function SkillDetailScreen() {
           difficulty: group.difficulty,
           visibility: group.visibility,
           currentParticipants: group.current_participants,
+          userRole: "teacher",
         })
       }
       activeOpacity={0.8}

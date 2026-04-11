@@ -358,4 +358,24 @@ export const sessionsAPI = {
   },
 };
 
+//Q&A
+export const qaAPI = {
+  getConversation: async (groupId: number) => {
+    const response = await api.get(`/qa/groups/${groupId}/conversation`);
+    return response.data;
+  },
+  askQuestion: async (groupId: number, question: string) => {
+    const response = await api.post(`/qa/groups/${groupId}/ask`, { question });
+    return response.data;
+  },
+  getHistory: async (groupId: number) => {
+    const response = await api.get(`/qa/groups/${groupId}/history`);
+    return response.data;
+  },
+  clearConversation: async (groupId: number) => {
+    const response = await api.delete(`/qa/groups/${groupId}/clear`);
+    return response.data;
+  },
+};
+
 export default api;

@@ -16,6 +16,7 @@ interface GroupContextType {
   difficulty: string;
   visibility: string;
   currentParticipants: number;
+  userRole: "teacher" | "learner";
 }
 const GroupContext = createContext<GroupContextType | undefined>(undefined);
 

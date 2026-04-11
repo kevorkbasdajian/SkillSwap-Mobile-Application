@@ -72,6 +72,7 @@ export type RootStackParamList = {
     difficulty: string;
     visibility: string;
     currentParticipants: number;
+    userRole: "teacher" | "learner";
   };
 };
 
