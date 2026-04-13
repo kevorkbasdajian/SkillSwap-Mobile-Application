@@ -276,6 +276,7 @@ const groupService = {
           cover_image_url,
           max_participants,
           status,
+          creator_id,
           skill:skill_id (id, name, icon_url),
           group_members (id, has_joined)
         )
@@ -727,19 +728,19 @@ const groupService = {
   },
   getGroupMembers: async (userId, groupId) => {
     //Check that the user is the owner of the group
-    const { data: group, error: groupError } = await supabase
-      .from("groups")
-      .select("id, creator_id")
-      .eq("id", groupId)
-      .single();
+    // const { data: group, error: groupError } = await supabase
+    //   .from("groups")
+    //   .select("id, creator_id")
+    //   .eq("id", groupId)
+    //   .single();
 
-    if (groupError || !group) {
-      throw new Error("Group not found");
-    }
+    // if (groupError || !group) {
+    //   throw new Error("Group not found");
+    // }
 
-    if (group.creator_id !== userId) {
-      throw new Error("Only the group creator can retrieve the members");
-    }
+    // if (group.creator_id !== userId) {
+    //   throw new Error("Only the group creator can retrieve the members");
+    // }
 
     // Get a list of the group_members
     const { data: groupMembers, error } = await supabase
@@ -760,22 +761,22 @@ const groupService = {
     return groupMembers;
   },
   getFriendsWithInterest: async (userId, groupId) => {
-    //Check that the user is the owner of the group
+    // Check that the user is the owner of the group
     const { data: group, error: groupError } = await supabase
       .from("groups")
       .select("id, creator_id, difficulty, skill:skills(id)")
       .eq("id", groupId)
       .single();
 
-    if (groupError || !group) {
-      throw new Error("Group not found");
-    }
+    // if (groupError || !group) {
+    //   throw new Error("Group not found");
+    // }
 
-    if (group.creator_id !== userId) {
-      throw new Error(
-        "Only the group creator can get a list of friends with interest",
-      );
-    }
+    // if (group.creator_id !== userId) {
+    //   throw new Error(
+    //     "Only the group creator can get a list of friends with interest",
+    //   );
+    // }
 
     //Get List of friends
     const { data: friendsWithInterest, error } = await supabase

@@ -23,6 +23,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "@/src/components/common/Button";
 import { Modal } from "@/src/components/common/Modal";
 import { Input } from "@/src/components/common/Input";
+import { getSocket } from "@/src/services/socketService";
 
 interface HistoryNotification {
   id: number;
@@ -37,7 +38,7 @@ export default function GroupNotificationHistoryScreen() {
   const navigation = useNavigation();
   //Error handling
   const toast = useErrorToast();
-  const { groupId } = useGroupContext();
+  const { groupId, userRole } = useGroupContext();
 
   //Store the notifications here
   const [notifications, setNotifications] = useState<HistoryNotification[]>([]);
@@ -63,11 +64,29 @@ export default function GroupNotificationHistoryScreen() {
       const response = await notificationsAPI.getNotificationHistory(groupId);
       const data = Array.isArray(response.data) ? response.data : [];
       setNotifications(data);
+      setupSocketListener();
     } catch (error: any) {
       toast.showError("Failed to load notification history");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const setupSocketListener = () => {
+    const socket = getSocket();
+    if (!socket) return;
+    socket.on("notification", (payload: any) => {
+      const raw = payload.data[0];
+
+      const formatted: HistoryNotification = {
+        id: raw.notifications.id,
+        title: raw.notifications.title,
+        message: raw.notifications.message,
+        created_at: raw.notifications.created_at,
+      };
+
+      setNotifications((prev) => [...prev, formatted]);
+    });
   };
 
   const handleSend = async () => {
@@ -145,73 +164,77 @@ export default function GroupNotificationHistoryScreen() {
       </ScrollView>
 
       {/* Send button */}
-      <View style={styles.sendButtonContainer}>
-        <Button
-          title="New Notification"
-          variant="secondary"
-          size="large"
-          fullWidth
-          onPress={() => setShowSendModal(true)}
-          icon={
-            <MaterialCommunityIcons
-              name="email-arrow-right"
-              size={20}
-              color={COLORS.white}
-            />
-          }
-        />
-      </View>
-
-      {/* Send Modal */}
-      <Modal
-        visible={showSendModal}
-        title="Send a Message"
-        showCloseButton
-        size="large"
-        onClose={() => {
-          setShowSendModal(false);
-          setTitle("");
-          setMessage("");
-        }}
-      >
-        <View style={styles.modalContent}>
-          <Input
-            label="Title"
-            labelStyle={{ color: COLORS.darkBlue }}
-            value={title}
-            onChangeText={setTitle}
-            placeholder="e.g., Important Reminder"
-            textStyle={{ color: COLORS.darkBlue }}
-          />
-          <Input
-            label="Description"
-            labelStyle={{ color: COLORS.darkBlue }}
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Write your message here..."
-            textStyle={{ color: COLORS.darkBlue }}
-            ismultiline
-            multiline
-            numberOfLines={4}
-          />
+      {userRole === "teacher" && (
+        <View style={styles.sendButtonContainer}>
           <Button
-            title="Send Message"
+            title="New Notification"
             variant="secondary"
             size="large"
             fullWidth
-            loading={isSending}
-            disabled={isSending}
-            onPress={handleSend}
+            onPress={() => setShowSendModal(true)}
             icon={
               <MaterialCommunityIcons
-                name="send"
-                size={18}
+                name="email-arrow-right"
+                size={20}
                 color={COLORS.white}
               />
             }
           />
         </View>
-      </Modal>
+      )}
+
+      {/* Send Modal */}
+      {userRole === "teacher" && (
+        <Modal
+          visible={showSendModal}
+          title="Send a Message"
+          showCloseButton
+          size="large"
+          onClose={() => {
+            setShowSendModal(false);
+            setTitle("");
+            setMessage("");
+          }}
+        >
+          <View style={styles.modalContent}>
+            <Input
+              label="Title"
+              labelStyle={{ color: COLORS.darkBlue }}
+              value={title}
+              onChangeText={setTitle}
+              placeholder="e.g., Important Reminder"
+              textStyle={{ color: COLORS.darkBlue }}
+            />
+            <Input
+              label="Description"
+              labelStyle={{ color: COLORS.darkBlue }}
+              value={message}
+              onChangeText={setMessage}
+              placeholder="Write your message here..."
+              textStyle={{ color: COLORS.darkBlue }}
+              ismultiline
+              multiline
+              numberOfLines={4}
+            />
+            <Button
+              title="Send Message"
+              variant="secondary"
+              size="large"
+              fullWidth
+              loading={isSending}
+              disabled={isSending}
+              onPress={handleSend}
+              icon={
+                <MaterialCommunityIcons
+                  name="send"
+                  size={18}
+                  color={COLORS.white}
+                />
+              }
+            />
+          </View>
+        </Modal>
+      )}
     </SafeAreaView>
   );
 }

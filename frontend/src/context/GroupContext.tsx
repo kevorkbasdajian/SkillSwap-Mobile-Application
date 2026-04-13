@@ -17,6 +17,7 @@ interface GroupContextType {
   visibility: string;
   currentParticipants: number;
   userRole: "teacher" | "learner";
+  creatorId: string;
 }
 const GroupContext = createContext<GroupContextType | undefined>(undefined);
 

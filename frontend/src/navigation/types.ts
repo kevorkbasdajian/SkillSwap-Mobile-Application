@@ -73,6 +73,7 @@ export type RootStackParamList = {
     visibility: string;
     currentParticipants: number;
     userRole: "teacher" | "learner";
+    creatorId: string;
   };
 };
 

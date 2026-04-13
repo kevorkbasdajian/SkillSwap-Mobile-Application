@@ -27,6 +27,7 @@ const notificationService = {
       `,
       )
       .eq("recipient_id", userId)
+      .in("notifications.related_entity_type", ["friendship", "group"])
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -39,28 +40,29 @@ const notificationService = {
   // History of Sent Notifications for the teacher
   getNotificationHistory: async (userId, groupId) => {
     //Check that the user is the owner of the group
-    const { data: group, error: groupError } = await supabase
-      .from("groups")
-      .select("id, creator_id")
-      .eq("id", groupId)
-      .single();
+    // const { data: group, error: groupError } = await supabase
+    //   .from("groups")
+    //   .select("id, creator_id")
+    //   .eq("id", groupId)
+    //   .single();
 
-    if (groupError || !group) {
-      throw new Error("Group not found");
-    }
+    // if (groupError || !group) {
+    //   throw new Error("Group not found");
+    // }
 
-    if (group.creator_id !== userId) {
-      throw new Error(
-        "Only the group creator can view the history of notifications sent",
-      );
-    }
+    // if (group.creator_id !== userId) {
+    //   throw new Error(
+    //     "Only the group creator can view the history of notifications sent",
+    //   );
+    // }
 
     //Retrieve notification history
     const { data: notification_history, error } = await supabase
       .from("notifications")
       .select("id,title,message,created_at")
-      .eq("sender_id", userId)
+      // .eq("sender_id", userId)
       .eq("related_entity_id", groupId)
+      .in("related_entity_type", ["session", "Group General"])
       .order("created_at", { ascending: true });
 
     if (error) {

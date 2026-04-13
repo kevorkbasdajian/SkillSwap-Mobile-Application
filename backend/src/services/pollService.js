@@ -204,6 +204,7 @@ const PollService = {
         (sum, opt) => sum + opt.vote_count,
         0,
       ),
+      options: optionsWithCounts,
     };
   },
   //Vote on poll

@@ -14,6 +14,7 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   notifications: NotificationContent;
+  type: string;
 }
 
 export interface NotificationContent {
@@ -73,8 +74,10 @@ export function NotificationProvider({
 
     loadNotifications();
 
+    let socket: any;
+
     const setupSocket = async () => {
-      const socket = await connectSocket();
+      socket = await connectSocket();
 
       socket.on("connect", () => {
         setIsConnected(true);
@@ -85,14 +88,20 @@ export function NotificationProvider({
         setIsConnected(false);
       });
 
-      //Listen for new notifications from backend
-      socket.on("new-notification", (notification: Notification) => {
-        console.log("Notification is:", notification);
+      socket.on("notification", (notification: any) => {
+        setNotifications((prev) => [notification.data[0], ...prev]);
+      });
+      socket.on("group", (notification: Notification) => {
         setNotifications((prev) => [notification, ...prev]);
       });
-      return () => {
-        disconnectSocket();
-      };
+    };
+
+    setupSocket();
+
+    return () => {
+      if (socket) {
+        socket.disconnect();
+      }
     };
   }, [user, token]);
 

@@ -51,6 +51,7 @@ interface Group {
   skill?: { id: string; name: string; icon_url: string };
   status?: string;
   has_joined?: boolean;
+  creator_id: string;
 }
 
 interface GroupDetails extends Group {
@@ -374,7 +375,22 @@ export default function SkillDetailScreen() {
     return (
       <TouchableOpacity
         style={styles.rightPanel}
-        onPress={() => console.log("TODOL group page", firstGroup.id)}
+        onPress={() => {
+          console.log("PRESSED");
+          navigation.navigate("GroupMain", {
+            groupId: firstGroup.id,
+            groupName: firstGroup.name,
+            skillName: skillName,
+            skillIconUrl: skillIconUrl,
+            coverImageUrl: firstGroup.cover_image_url,
+            maxParticipants: firstGroup.max_participants,
+            difficulty: firstGroup.difficulty,
+            visibility: firstGroup.visibility,
+            currentParticipants: firstGroup.current_participants,
+            userRole: "learner",
+            creatorId: firstGroup.creator_id,
+          });
+        }}
         activeOpacity={0.8}
       >
         {firstGroup.cover_image_url ? (
@@ -483,6 +499,7 @@ export default function SkillDetailScreen() {
           visibility: group.visibility,
           currentParticipants: group.current_participants,
           userRole: "teacher",
+          creatorId: group.creator_id,
         })
       }
       activeOpacity={0.8}

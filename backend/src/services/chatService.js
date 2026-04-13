@@ -335,7 +335,7 @@ const chatService = {
 
     //Emit real-time update
     const io = getIO();
-    io.to(`group-chat:${message.group_chat.id}`).emit("message_unpinned", {
+    io.to(`group-chat:${message.group_chat.id}`).emit("message-unpinned", {
       messageId,
     });
 

@@ -294,11 +294,16 @@ export const friendAPI = {
     return response.data;
   },
   rejectFriendRequest: async (friendshipId: string) => {
-    const response = await api.delete(`/friends/${friendshipId}/reject`);
-    return response.data;
+    try {
+      const response = await api.patch(`/friends/${friendshipId}/reject`);
+      return response.data;
+    } catch (error: any) {
+      console.error(error.response.data);
+    }
   },
 };
 
+//Notifications API
 export const notificationsAPI = {
   getAll: async () => {
     const response = await api.get("/notifications");
@@ -374,6 +379,81 @@ export const qaAPI = {
   },
   clearConversation: async (groupId: number) => {
     const response = await api.delete(`/qa/groups/${groupId}/clear`);
+    return response.data;
+  },
+};
+
+//Chat API
+export const chatAPI = {
+  getGroupChat: async (groupId: number) => {
+    const response = await api.get(`/chat/groups/${groupId}`);
+    return response.data;
+  },
+  sendMessage: async (
+    groupChatId: string,
+    data: {
+      content: string;
+      reply_to_message_id?: string;
+    },
+  ) => {
+    const response = await api.post(
+      `/chat/chats/${groupChatId}/messages`,
+      data,
+    );
+    return response.data;
+  },
+  getChatMessages: async (groupChatId: string, limit = 50, before?: string) => {
+    const params: any = { limit };
+    if (before) params.before = before;
+    const response = await api.get(`/chat/chats/${groupChatId}/messages`, {
+      params,
+    });
+    return response.data;
+  },
+  getPinnedMessages: async (groupChatId: string) => {
+    const response = await api.get(`/chat/chats/${groupChatId}/pinned`);
+    return response.data;
+  },
+  pinMessage: async (messageId: string) => {
+    const response = await api.patch(`/chat/messages/${messageId}/pin`);
+    return response.data;
+  },
+  unpinMessage: async (messageId: string) => {
+    const response = await api.patch(`/chat/messages/${messageId}/unpin`);
+    return response.data;
+  },
+  deleteMessage: async (messageId: string) => {
+    const response = await api.delete(`/chat/messages/${messageId}/delete`);
+    return response.data;
+  },
+  createPoll: async (
+    groupChatId: string,
+    data: {
+      question: string;
+      options: string[];
+      allow_multiple_answers: boolean;
+      expires_at?: string;
+    },
+  ) => {
+    const response = await api.post(`/chat/chats/${groupChatId}/polls`, data);
+    return response.data;
+  },
+  getPollDetails: async (pollId: string) => {
+    const response = await api.get(`/chat/polls/${pollId}`);
+    return response.data;
+  },
+  votePoll: async (pollId: string, option_ids: string[]) => {
+    const response = await api.post(`/chat/polls/${pollId}/vote`, {
+      option_ids,
+    });
+    return response.data;
+  },
+  closePoll: async (pollId: string) => {
+    const response = await api.patch(`/chat/polls/${pollId}/close`);
+    return response.data;
+  },
+  deletePoll: async (pollId: string) => {
+    const response = await api.delete(`/chat/polls/${pollId}`);
     return response.data;
   },
 };

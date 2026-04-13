@@ -254,7 +254,10 @@ export default function SessionDetailScreen() {
       </SafeAreaView>
     );
   }
-  if (!session) return null;
+  if (!session) {
+    console.log("sjsks");
+    return null;
+  }
 
   const statusConfig = getStatusConfig(session.status);
   const duration = calcDuration(session.start_time, session.end_time);

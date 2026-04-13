@@ -31,6 +31,7 @@ import { Modal } from "@/src/components/common/Modal";
 import { Button } from "@/src/components/common/Button";
 import { Input } from "@/src/components/common/Input";
 import { GradientBackground } from "@/src/components/common/GradientBackground";
+import { useAuth } from "@/src/context/AuthContext";
 
 type GroupHomeNavProp = NativeStackNavigationProp<GroupStackParamList>;
 
@@ -69,7 +70,9 @@ export default function GroupHomeScreen() {
     difficulty,
     visibility,
     currentParticipants,
+    creatorId,
   } = useGroupContext();
+  const { user } = useAuth();
 
   //participants modal
   const [showParticipants, setShowParticipants] = useState(false);
@@ -88,6 +91,7 @@ export default function GroupHomeScreen() {
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
+  const isTeacher = user?.id === creatorId;
 
   //---------------Hooks-----------
   useEffect(() => {
@@ -191,20 +195,20 @@ export default function GroupHomeScreen() {
     d === "beginner" ? "success" : d === "intermediate" ? "warning" : "error";
 
   //Render group member Item
-  const renderMemberItem = ({ item }: { item: Member }) => {
-    return (
-      <View style={styles.memberRow}>
-        <Image
-          source={
-            item.user.profile_image_url
-              ? { uri: item.user.profile_image_url }
-              : require("../../assets/images/Avatar.png")
-          }
-          style={styles.memberAvatar}
-        />
-        <Text style={styles.memberName}>
-          {item.user.nick_name ?? item.user.full_name}
-        </Text>
+  const renderMemberItem = ({ item }: { item: Member }) => (
+    <View style={styles.memberRow}>
+      <Image
+        source={
+          item.user.profile_image_url
+            ? { uri: item.user.profile_image_url }
+            : require("../../assets/images/Avatar.png")
+        }
+        style={styles.memberAvatar}
+      />
+      <Text style={styles.memberName}>
+        {item.user.nick_name ?? item.user.full_name}
+      </Text>
+      {isTeacher && (
         <TouchableOpacity
           onPress={() => handleRemoveMember(item.id)}
           disabled={removingId === item.id}
@@ -215,9 +219,9 @@ export default function GroupHomeScreen() {
             <Text style={styles.removeText}>remove</Text>
           )}
         </TouchableOpacity>
-      </View>
-    );
-  };
+      )}
+    </View>
+  );
 
   const renderFriendItem = ({ item }: { item: FriendWithInterest }) => {
     const isSelected = selectedFriendIds.includes(item.user.id);
@@ -393,13 +397,15 @@ export default function GroupHomeScreen() {
           </View>
 
           {/* Edit button */}
-          <TouchableOpacity style={styles.editButton}>
-            <MaterialCommunityIcons
-              name="pencil"
-              size={18}
-              color={COLORS.white}
-            />
-          </TouchableOpacity>
+          {isTeacher && (
+            <TouchableOpacity style={styles.editButton}>
+              <MaterialCommunityIcons
+                name="pencil"
+                size={18}
+                color={COLORS.white}
+              />
+            </TouchableOpacity>
+          )}
         </GradientBackground>
       </ScrollView>
 
@@ -436,64 +442,68 @@ export default function GroupHomeScreen() {
               />
             )}
 
-            {/* Divider */}
-            <View style={styles.dividerRow}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>Users & Friends</Text>
-              <View style={styles.dividerLine} />
-            </View>
+            {isTeacher && (
+              <>
+                {/* Divider */}
+                <View style={styles.dividerRow}>
+                  <View style={styles.dividerLine} />
+                  <Text style={styles.dividerText}>Users & Friends</Text>
+                  <View style={styles.dividerLine} />
+                </View>
 
-            {/* Friend search */}
-            <Input
-              value={friendSearchQuery}
-              onChangeText={setFriendSearchQuery}
-              placeholder="Search friends..."
-              textStyle={{ color: COLORS.darkBlue }}
-              leftIcon={
-                <MaterialCommunityIcons
-                  name="magnify"
-                  size={18}
-                  color={COLORS.midBlack}
+                {/* Friend search */}
+                <Input
+                  value={friendSearchQuery}
+                  onChangeText={setFriendSearchQuery}
+                  placeholder="Search friends..."
+                  textStyle={{ color: COLORS.darkBlue }}
+                  leftIcon={
+                    <MaterialCommunityIcons
+                      name="magnify"
+                      size={18}
+                      color={COLORS.midBlack}
+                    />
+                  }
                 />
-              }
-            />
 
-            {/* Friends list */}
-            {isLoadingFriends ? (
-              <ActivityIndicator size="small" color={COLORS.midBlue} />
-            ) : filteredFriends.length === 0 ? (
-              <Text style={styles.noMembersText}>
-                No friends with interest found
-              </Text>
-            ) : (
-              <FlatList
-                data={filteredFriends}
-                renderItem={renderFriendItem}
-                keyExtractor={(item) => item.user.id}
-                scrollEnabled={false}
-                style={{ maxHeight: 180 }}
-              />
-            )}
-
-            {/* Invite button */}
-            {selectedFriendIds.length > 0 && (
-              <Button
-                title={`Add New Participants (${selectedFriendIds.length})`}
-                variant="primary"
-                size="large"
-                fullWidth
-                loading={isInviting}
-                disabled={isInviting}
-                onPress={handleInviteSelected}
-                style={{ marginTop: SPACING.md }}
-                icon={
-                  <MaterialCommunityIcons
-                    name="account-plus"
-                    size={18}
-                    color={COLORS.white}
+                {/* Friends list */}
+                {isLoadingFriends ? (
+                  <ActivityIndicator size="small" color={COLORS.midBlue} />
+                ) : filteredFriends.length === 0 ? (
+                  <Text style={styles.noMembersText}>
+                    No friends with interest found
+                  </Text>
+                ) : (
+                  <FlatList
+                    data={filteredFriends}
+                    renderItem={renderFriendItem}
+                    keyExtractor={(item) => item.user.id}
+                    scrollEnabled={false}
+                    style={{ maxHeight: 180 }}
                   />
-                }
-              />
+                )}
+
+                {/* Invite button */}
+                {selectedFriendIds.length > 0 && (
+                  <Button
+                    title={`Add New Participants (${selectedFriendIds.length})`}
+                    variant="primary"
+                    size="large"
+                    fullWidth
+                    loading={isInviting}
+                    disabled={isInviting}
+                    onPress={handleInviteSelected}
+                    style={{ marginTop: SPACING.md }}
+                    icon={
+                      <MaterialCommunityIcons
+                        name="account-plus"
+                        size={18}
+                        color={COLORS.white}
+                      />
+                    }
+                  />
+                )}
+              </>
             )}
           </>
         )}

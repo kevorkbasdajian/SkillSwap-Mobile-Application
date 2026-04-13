@@ -137,7 +137,7 @@ export default function GroupSessionsScreen() {
   //For error handling
   const toast = useErrorToast();
   //Extracting the group Id from the context
-  const { groupId } = useGroupContext();
+  const { groupId, userRole } = useGroupContext();
 
   //Sessions
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -598,50 +598,52 @@ export default function GroupSessionsScreen() {
             </View>
           </TouchableOpacity> */}
 
-          <View style={{ marginTop: SPACING.massive }}>
-            <GradientBackground
-              variant="darkBlueToMidLightBlue"
-              style={styles.sessionCard}
-            >
-              <TouchableOpacity
-                onPress={() => setShowCreateModal(true)}
-                activeOpacity={0.8}
-                style={styles.sessionCardContainer}
+          {userRole === "teacher" && (
+            <View style={{ marginTop: SPACING.massive }}>
+              <GradientBackground
+                variant="darkBlueToMidLightBlue"
+                style={styles.sessionCard}
               >
-                <View style={styles.header}>
-                  <Text
-                    style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
-                  >
-                    Create Session
-                  </Text>
-                  <MaterialCommunityIcons
-                    name="plus"
-                    size={28}
-                    color={COLORS.white}
-                  />
-                </View>
-
-                <View style={styles.sessionCardBottom}>
-                  <View style={styles.durationRow}>
+                <TouchableOpacity
+                  onPress={() => setShowCreateModal(true)}
+                  activeOpacity={0.8}
+                  style={styles.sessionCardContainer}
+                >
+                  <View style={styles.header}>
+                    <Text
+                      style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
+                    >
+                      Create Session
+                    </Text>
                     <MaterialCommunityIcons
-                      name="timer-sand"
-                      size={40}
-                      color={COLORS.lightBlue}
+                      name="plus"
+                      size={28}
+                      color={COLORS.white}
                     />
                   </View>
-                </View>
-                <LottieView
-                  source={require("../../assets/animations/createSessionAnimation.json")}
-                  autoPlay
-                  loop
-                  style={styles.animation}
-                />
-              </TouchableOpacity>
-            </GradientBackground>
-          </View>
+
+                  <View style={styles.sessionCardBottom}>
+                    <View style={styles.durationRow}>
+                      <MaterialCommunityIcons
+                        name="timer-sand"
+                        size={40}
+                        color={COLORS.lightBlue}
+                      />
+                    </View>
+                  </View>
+                  <LottieView
+                    source={require("../../assets/animations/createSessionAnimation.json")}
+                    autoPlay
+                    loop
+                    style={styles.animation}
+                  />
+                </TouchableOpacity>
+              </GradientBackground>
+            </View>
+          )}
         </ScrollView>
       )}
-      {renderCreateModal()}
+      {userRole === "teacher" && renderCreateModal()}
       <ErrorToast
         visible={toast.visible}
         message={toast.message}
