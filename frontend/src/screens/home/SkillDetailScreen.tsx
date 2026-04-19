@@ -176,11 +176,13 @@ export default function SkillDetailScreen() {
       ]);
       if (myRes.success) {
         const forSkill = myRes.data.filter(
-          (g: any) => String(g.skill?.id) === String(skillId),
+          (g: any) =>
+            String(g.skill?.id) === String(skillId) && g.has_joined === true,
         );
         setMyGroupsForSkill(forSkill);
       }
       if (availRes.success) {
+        console.log("Hello", availRes.data);
         setAvailableGroups(availRes.data);
         setFilteredGroups(availRes.data);
       }
@@ -389,6 +391,7 @@ export default function SkillDetailScreen() {
             currentParticipants: firstGroup.current_participants,
             userRole: "learner",
             creatorId: firstGroup.creator_id,
+            description: firstGroup.description,
           });
         }}
         activeOpacity={0.8}
@@ -500,6 +503,7 @@ export default function SkillDetailScreen() {
           currentParticipants: group.current_participants,
           userRole: "teacher",
           creatorId: group.creator_id,
+          description: group.description,
         })
       }
       activeOpacity={0.8}
@@ -1121,7 +1125,7 @@ const styles = StyleSheet.create({
   },
   groupCoverSmall: {
     width: "100%",
-    height: 55,
+    height: 100,
     borderRadius: BORDER_RADIUS.md,
   },
   groupCoverSmallPlaceholder: {
@@ -1171,6 +1175,7 @@ const styles = StyleSheet.create({
   groupCardImage: {
     width: 75,
     height: 75,
+    borderRadius: BORDER_RADIUS.round,
   },
   groupCardImagePlaceholder: {
     width: 75,

@@ -8,9 +8,14 @@ import {
 import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { RootStackParamList, TabParamList } from "@/src/navigation/types";
 import { friendAPI, userAPI } from "@/src/services/api";
-import { useNavigation } from "@react-navigation/native";
+import {
+  useNavigation,
+  CompositeNavigationProp,
+  useFocusEffect,
+} from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -32,7 +37,10 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Button } from "@/src/components/common/Button";
 
 // Type for navigation
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type NavigationProp = CompositeNavigationProp<
+  NativeStackNavigationProp<RootStackParamList>,
+  BottomTabNavigationProp<TabParamList>
+>;
 
 // Interface for the profile
 interface Profile {
@@ -98,9 +106,11 @@ export default function ProfileScreen() {
     );
   }, [profile, originalProfile]);
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, []),
+  );
 
   const loadProfile = async () => {
     try {
@@ -520,17 +530,25 @@ export default function ProfileScreen() {
             ) : (
               <>
                 <Text style={styles.editbio}>* Edit Enabled </Text>
-                <Input
-                  value={profile?.biography}
-                  multiline={true}
-                  inputStyle={styles.biographyInput}
-                  textStyle={styles.biographyText}
-                  onChangeText={(text) =>
-                    setProfile((prev) =>
-                      prev ? { ...prev, biography: text } : prev,
-                    )
-                  }
-                />
+                <View style={{ position: "relative" }}>
+                  <Input
+                    value={profile?.biography}
+                    multiline={true}
+                    numberOfLines={5}
+                    maxLength={120}
+                    inputStyle={styles.biographyInput}
+                    textStyle={styles.biographyText}
+                    onChangeText={(text) =>
+                      setProfile((prev) =>
+                        prev ? { ...prev, biography: text } : prev,
+                      )
+                    }
+                  />
+                  <Text style={styles.charCount}>
+                    {profile?.biography?.length ?? 0}/120
+                  </Text>
+                </View>
+
                 <View
                   style={{
                     flexDirection: "column",
@@ -583,6 +601,11 @@ export default function ProfileScreen() {
                         <Text style={styles.dropdownText}>
                           {profile?.education_level || "Select Education Level"}
                         </Text>
+                        <MaterialCommunityIcons
+                          name="chevron-down"
+                          size={18}
+                          color={COLORS.lightOrange}
+                        />
                       </TouchableOpacity>
                     </View>
                     <View style={styles.dateOfBirthEdit}>
@@ -602,6 +625,11 @@ export default function ProfileScreen() {
                         <Text style={styles.dropdownText}>
                           {profile?.gender || "Select Gender"}
                         </Text>
+                        <MaterialCommunityIcons
+                          name="chevron-down"
+                          size={18}
+                          color={COLORS.lightOrange}
+                        />
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -709,26 +737,51 @@ export default function ProfileScreen() {
       >
         <View style={styles.dropdownContainer}>
           {(openEducationDropdown ? EDUCATION_OPTIONS : GENDER_OPTIONS).map(
-            (option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.dropdownItem}
-                onPress={() => {
-                  setProfile((prev) =>
-                    prev
-                      ? openEducationDropdown
-                        ? { ...prev, education_level: option }
-                        : { ...prev, gender: option }
-                      : prev,
-                  );
-                  openEducationDropdown
-                    ? setOpenEducationDropdown(false)
-                    : setOpenGenderDropdown(false);
-                }}
-              >
-                <Text>{option}</Text>
-              </TouchableOpacity>
-            ),
+            (option) => {
+              const isSelected = openEducationDropdown
+                ? profile?.education_level === option
+                : profile?.gender === option;
+
+              return (
+                <TouchableOpacity
+                  key={option}
+                  style={[
+                    styles.dropdownItem,
+                    isSelected && styles.dropdownItemSelected,
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setProfile((prev) =>
+                      prev
+                        ? openEducationDropdown
+                          ? { ...prev, education_level: option }
+                          : { ...prev, gender: option }
+                        : prev,
+                    );
+                    openEducationDropdown
+                      ? setOpenEducationDropdown(false)
+                      : setOpenGenderDropdown(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownText2,
+                      isSelected && styles.dropdownTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+
+                  {isSelected && (
+                    <MaterialCommunityIcons
+                      name="check"
+                      size={18}
+                      color={COLORS.lightBlue}
+                    />
+                  )}
+                </TouchableOpacity>
+              );
+            },
           )}
         </View>
       </Modal>
@@ -874,7 +927,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.lightBlue,
     borderRadius: BORDER_RADIUS.xl,
     marginInline: "auto",
-    width: "85%",
+    width: "90%",
     paddingBlock: SPACING.md,
     paddingInline: SPACING.huge,
   },
@@ -897,11 +950,13 @@ const styles = StyleSheet.create({
   biographyText: {
     fontFamily: FONT_USAGE.body,
     fontSize: FONT_SIZES.sm,
-    color: COLORS.midBlack,
+    color: COLORS.midBlue,
   },
   biographyInput: {
     borderColor: COLORS.lightOrange,
-    padding: 0,
+    paddingHorizontal: 5,
+    paddingBottom: 8,
+    backgroundColor: COLORS.darkGray,
   },
   editbio: {
     textAlign: "left",
@@ -923,7 +978,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: COLORS.lightOrange,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.darkGray,
     borderRadius: BORDER_RADIUS.xl,
     padding: SPACING.md,
     justifyContent: "center",
@@ -947,14 +1002,12 @@ const styles = StyleSheet.create({
   },
   dropdownButton: {
     paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
+    paddingHorizontal: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
-  dropdownText: {
-    color: "#333",
-  },
+
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -962,14 +1015,38 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   dropdownContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    paddingVertical: 8,
+    backgroundColor: COLORS.darkGray,
+    borderRadius: 12,
+    overflow: "hidden",
   },
+
   dropdownItem: {
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+  },
+
+  dropdownItemSelected: {
+    backgroundColor: COLORS.darkBlue,
+  },
+
+  dropdownText: {
+    fontSize: 14,
+    fontFamily: FONT_USAGE.body,
+    color: COLORS.midBlue,
+  },
+  dropdownText2: {
+    fontSize: 14,
+    fontFamily: FONT_USAGE.body,
+    color: COLORS.lightOrange,
+  },
+
+  dropdownTextSelected: {
+    color: COLORS.white,
+    fontWeight: "600",
   },
 
   friendsModalScroll: {
@@ -997,5 +1074,15 @@ const styles = StyleSheet.create({
     fontFamily: FONT_USAGE.body,
     fontSize: FONT_SIZES.xs,
     color: COLORS.midBlack,
+  },
+  charCount: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: 10,
+    color: COLORS.midBlack,
+    textAlign: "right",
+    marginTop: SPACING.xs,
+    position: "absolute",
+    bottom: 20,
+    right: 12,
   },
 });

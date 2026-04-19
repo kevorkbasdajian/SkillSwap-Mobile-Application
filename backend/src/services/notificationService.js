@@ -27,14 +27,16 @@ const notificationService = {
       `,
       )
       .eq("recipient_id", userId)
-      .in("notifications.related_entity_type", ["friendship", "group"])
+      .not("notifications", "is", null)
       .order("created_at", { ascending: false });
 
     if (error) {
       throw new Error(`Failed to fetch notifications: ${error.message}`);
     }
 
-    return notifications;
+    return notifications.filter((n) =>
+      ["friendship", "group"].includes(n.notifications.related_entity_type),
+    );
   },
 
   // History of Sent Notifications for the teacher
@@ -64,6 +66,8 @@ const notificationService = {
       .eq("related_entity_id", groupId)
       .in("related_entity_type", ["session", "Group General"])
       .order("created_at", { ascending: true });
+
+    console.log(notification_history, groupId);
 
     if (error) {
       throw new Error(

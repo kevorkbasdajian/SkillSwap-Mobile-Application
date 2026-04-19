@@ -27,6 +27,21 @@ const authService = {
     if (error) {
       throw new Error(`Registration failed: ${error.message}`);
     }
+    const { error: settingsError } = await supabase
+      .from("user_settings")
+      .insert([
+        {
+          user_id: newUser.id,
+          allow_notifications: true,
+          show_skills: true,
+          allow_friend_requests: true,
+          auto_accept_group_invites: true,
+        },
+      ]);
+
+    if (settingsError) {
+      throw new Error(`Settings creation failed: ${settingsError.message}`);
+    }
 
     //Generate JWT token
     const token = generateToken({ userId: newUser.id, email: newUser.email });

@@ -149,6 +149,41 @@ const userController = {
       next(error);
     }
   },
+  getUserSettings: async (req, res, next) => {
+    try {
+      const UserSettings = await userService.getUserSettings(req.user.id);
+      return res.status(200).json({
+        success: true,
+        message: "Settings retrieved successfully",
+        data: UserSettings,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  updateSettings: async (req, res, next) => {
+    try {
+      const { option, value } = req.body;
+      const userId = req.user.id;
+      await userService.updateSettings(userId, option, value);
+      return res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
+  deleteUserAccount: async (req, res, next) => {
+    try {
+      const message = await userService.deleteUserAccount(req.user.id);
+      return res.status(200).json({
+        sucess: true,
+        message: message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 module.exports = userController;
 

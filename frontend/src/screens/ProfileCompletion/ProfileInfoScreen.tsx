@@ -83,10 +83,6 @@ export default function ProfileInfoScreen() {
     biography: "",
     education_level: "",
   };
-  // const { signOut } = useAuth();
-  // useEffect(() => {
-  //   signOut();
-  // }, []);
 
   //---------------Functions-----------
 
@@ -292,7 +288,20 @@ export default function ProfileInfoScreen() {
                   <Text style={[styles.label, { marginBottom: SPACING.lg }]}>
                     Gender
                   </Text>
-                  <View style={styles.genderContainer}>
+                  <View
+                    style={[
+                      styles.genderContainer,
+                      ,
+                      touched.gender &&
+                        errors.gender && {
+                          borderWidth: 1,
+                          borderColor: "red",
+                          borderRadius: BORDER_RADIUS.lg,
+                          padding: SPACING.md,
+                          width: "80%",
+                        },
+                    ]}
+                  >
                     <TouchableOpacity
                       style={[
                         styles.genderButton,
@@ -347,10 +356,14 @@ export default function ProfileInfoScreen() {
                       </Text>
                     </TouchableOpacity>
                   </View>
-                  {touched.gender && errors.gender && (
-                    <Text style={styles.errorText}>{errors.gender}</Text>
-                  )}
                 </View>
+                {touched.gender && errors.gender && (
+                  <Text
+                    style={[styles.errorText, { marginBottom: SPACING.md }]}
+                  >
+                    {errors.gender}
+                  </Text>
+                )}
 
                 {/* Bio */}
                 <View style={styles.inputGroup}>
@@ -382,7 +395,16 @@ export default function ProfileInfoScreen() {
                   <Text style={[styles.label, { marginBottom: 10 }]}>
                     Level of Education
                   </Text>
-                  <View style={styles.educationGrid}>
+                  <View
+                    style={[
+                      styles.educationGrid,
+                      touched.education_level &&
+                        errors.education_level && {
+                          borderColor: "red",
+                          borderWidth: 1,
+                        },
+                    ]}
+                  >
                     {educationLevels.map((level) => (
                       <TouchableOpacity
                         key={level}
@@ -561,7 +583,7 @@ const styles = StyleSheet.create({
     fontSize: FONT_SIZES.md,
     marginBottom: SPACING.xs,
     marginLeft: SPACING.md,
-    color: COLORS.lightOrange,
+    color: COLORS.midBlue,
   },
   dateInput: {
     flexDirection: "row",

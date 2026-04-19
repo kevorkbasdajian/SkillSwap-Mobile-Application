@@ -103,6 +103,28 @@ export const userAPI = {
     });
     return response.data;
   },
+  //5- Get Settings
+  getUserSettings: async () => {
+    const response = await api.get("/users/settings");
+    return response.data;
+  },
+  //6-Update Settings
+  updateSettings: async (Option: any, value: any) => {
+    try {
+      const response = await api.patch("/users/updateSettings", {
+        option: Option,
+        value: value,
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error(error.response.data);
+    }
+  },
+  //7-Delete User Account
+  deleteUserAccount: async () => {
+    const response = await api.delete("/users/delete-account");
+    return response.data;
+  },
 };
 
 //Skills API
@@ -180,17 +202,25 @@ export const groupsAPI = {
   },
   //Approve Member
   approveMember: async (groupId: string, memberId: string) => {
-    const response = await api.patch(
-      `/groups/${groupId}/members/${memberId}/approve`,
-    );
-    return response.data;
+    try {
+      const response = await api.patch(
+        `/groups/${groupId}/members/${memberId}/approve`,
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error(error.response.data);
+    }
   },
   //Reject Member
   rejectMember: async (groupId: string, memberId: string) => {
-    const response = await api.patch(
-      `/groups/${groupId}/members/${memberId}/reject`,
-    );
-    return response.data;
+    try {
+      const response = await api.patch(
+        `/groups/${groupId}/members/${memberId}/reject`,
+      );
+      return response.data;
+    } catch (error: any) {
+      console.error("Error is", error.response.data);
+    }
   },
   //invite a friend to a group
   inviteMember: async (groupId: number, invitedUserId: string) => {
@@ -231,6 +261,24 @@ export const groupsAPI = {
   removeGroupMember: async (groupId: number, memberId: number) => {
     const response = await api.delete(`/groups/${groupId}/members/${memberId}`);
     return response.data;
+  },
+  //Update group info
+  updateGroup: async (
+    groupId: number,
+    data: {
+      name?: string;
+      description?: string;
+      difficulty?: string;
+      visibility?: string;
+      max_participants?: number;
+    },
+  ) => {
+    try {
+      const response = await api.put(`/groups/${groupId}`, data);
+      return response.data;
+    } catch (error: any) {
+      console.error(error.response.data);
+    }
   },
 };
 
@@ -359,6 +407,10 @@ export const sessionsAPI = {
   },
   deleteSession: async (sessionId: string) => {
     const response = await api.delete(`/sessions/${sessionId}`);
+    return response.data;
+  },
+  checkInToSession: async (sessionId: string) => {
+    const response = await api.post(`/sessions/${sessionId}/check-in`);
     return response.data;
   },
 };

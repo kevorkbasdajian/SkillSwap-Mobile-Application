@@ -71,6 +71,7 @@ interface UserProfile {
   skills: {
     teaching: UserSkill[];
     learning: UserSkill[];
+    hidden: boolean;
   };
   friends: Friend[];
 }
@@ -117,6 +118,7 @@ export default function UserProfileScreen() {
     setIsLoading(true);
     try {
       const response = await userAPI.getPublicProfile(targetUserId);
+      console.log(response.data);
       if (response.success) {
         setProfile(response.data);
       }
@@ -521,12 +523,23 @@ export default function UserProfileScreen() {
               displayedSkills.map((skill, index) =>
                 renderSkillCard(skill, index),
               )
+            ) : profile.skills.hidden ? (
+              <View style={styles.emptySkills}>
+                <MaterialCommunityIcons
+                  name="eye-off-outline"
+                  size={60}
+                  color={COLORS.error}
+                />
+                <Text style={styles.emptyText}>
+                  This user has hidden their skills
+                </Text>
+              </View>
             ) : (
               <View style={styles.emptySkills}>
                 <MaterialCommunityIcons
                   name="school-outline"
                   size={60}
-                  color={COLORS.midBlack}
+                  color={COLORS.error}
                 />
                 <Text style={styles.emptyText}>
                   No {activeTab === "learned" ? "learning" : "teaching"} skills
@@ -778,7 +791,7 @@ const styles = StyleSheet.create({
   emptyText: {
     fontFamily: FONT_USAGE.body,
     fontSize: FONT_SIZES.md,
-    color: COLORS.white,
+    color: COLORS.error,
     marginTop: SPACING.md,
   },
   friendsModalScroll: {

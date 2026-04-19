@@ -74,6 +74,7 @@ export type RootStackParamList = {
     currentParticipants: number;
     userRole: "teacher" | "learner";
     creatorId: string;
+    description: string;
   };
 };
 
@@ -84,7 +85,7 @@ export type GroupTabParamList = {
 };
 
 export type GroupStackParamList = {
-  GroupTabs: undefined;
+  GroupTabs: NavigatorScreenParams<GroupTabParamList>;
   GroupNotificationHistory: undefined;
   SessionDetail: { sessionId: string };
 };

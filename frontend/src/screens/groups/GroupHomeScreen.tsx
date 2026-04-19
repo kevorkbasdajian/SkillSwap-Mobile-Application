@@ -71,6 +71,8 @@ export default function GroupHomeScreen() {
     visibility,
     currentParticipants,
     creatorId,
+    description,
+    updateGroupInfo,
   } = useGroupContext();
   const { user } = useAuth();
 
@@ -92,6 +94,17 @@ export default function GroupHomeScreen() {
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const isTeacher = user?.id === creatorId;
+
+  //Edit the group
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: groupName,
+    description: description,
+    difficulty: difficulty,
+    visibility: visibility,
+    max_participants: maxParticipants,
+  });
 
   //---------------Hooks-----------
   useEffect(() => {
@@ -128,6 +141,7 @@ export default function GroupHomeScreen() {
     setIsLoadingFriends(true);
     try {
       const response = await groupsAPI.getFriendsWithInterest(groupId);
+      console.log(response.data);
       if (response.success) {
         const data = Array.isArray(response.data) ? response.data : [];
         setFriendsWithInterest(data);
@@ -165,6 +179,32 @@ export default function GroupHomeScreen() {
         ? prev.filter((id) => id !== userId)
         : [...prev, userId],
     );
+  };
+
+  const handleUpdateGroup = async () => {
+    setIsUpdating(true);
+    try {
+      await groupsAPI.updateGroup(groupId, {
+        name: editForm.name,
+        description: editForm.description,
+        difficulty: editForm.difficulty,
+        visibility: editForm.visibility,
+        max_participants: editForm.max_participants,
+      });
+      updateGroupInfo({
+        groupName: editForm.name,
+        description: editForm.description,
+        difficulty: editForm.difficulty,
+        visibility: editForm.visibility,
+        maxParticipants: editForm.max_participants,
+      });
+      toast.showSuccess("Group updated successfully!");
+      setShowEditModal(false);
+    } catch (error: any) {
+      toast.showError(error.response?.data?.error || "Failed to update group");
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleInviteSelected = async () => {
@@ -271,10 +311,7 @@ export default function GroupHomeScreen() {
         handleOnPress={() => navigation.goBack()}
       />
 
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <View style={{ padding: SPACING.lg, gap: SPACING.lg, flex: 1 }}>
         {/* ── top cards grid ── */}
         <View style={styles.topGrid}>
           {/* Participants card */}
@@ -305,7 +342,11 @@ export default function GroupHomeScreen() {
             >
               <TouchableOpacity
                 style={[styles.card, styles.cardOrange]}
-                onPress={() => navigation.getParent()?.navigate("GroupChat")}
+                onPress={() =>
+                  navigation.navigate("GroupTabs", {
+                    screen: "GroupChat",
+                  })
+                }
                 activeOpacity={0.8}
               >
                 <Text style={styles.cardTitle}>Chat</Text>
@@ -398,7 +439,19 @@ export default function GroupHomeScreen() {
 
           {/* Edit button */}
           {isTeacher && (
-            <TouchableOpacity style={styles.editButton}>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => {
+                setEditForm({
+                  name: groupName,
+                  description: description,
+                  difficulty: difficulty,
+                  visibility: visibility,
+                  max_participants: maxParticipants,
+                });
+                setShowEditModal(true);
+              }}
+            >
               <MaterialCommunityIcons
                 name="pencil"
                 size={18}
@@ -407,7 +460,7 @@ export default function GroupHomeScreen() {
             </TouchableOpacity>
           )}
         </GradientBackground>
-      </ScrollView>
+      </View>
 
       {/* ── Participants Modal ── */}
       <Modal
@@ -433,13 +486,14 @@ export default function GroupHomeScreen() {
             {members.length === 0 ? (
               <Text style={styles.noMembersText}>No participants yet</Text>
             ) : (
-              <FlatList
-                data={members}
-                renderItem={renderMemberItem}
-                keyExtractor={(item) => String(item.id)}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <View style={styles.separator} />}
-              />
+              members.map((item, index) => (
+                <View key={String(item.id)}>
+                  {renderMemberItem({ item })}
+                  {index < members.length - 1 && (
+                    <View style={styles.separator} />
+                  )}
+                </View>
+              ))
             )}
 
             {isTeacher && (
@@ -474,13 +528,18 @@ export default function GroupHomeScreen() {
                     No friends with interest found
                   </Text>
                 ) : (
-                  <FlatList
-                    data={filteredFriends}
-                    renderItem={renderFriendItem}
-                    keyExtractor={(item) => item.user.id}
-                    scrollEnabled={false}
-                    style={{ maxHeight: 180 }}
-                  />
+                  currentParticipants != maxParticipants && (
+                    <ScrollView
+                      style={{ maxHeight: 180 }}
+                      nestedScrollEnabled={true}
+                    >
+                      {filteredFriends.map((item) => (
+                        <View key={item.user.id}>
+                          {renderFriendItem({ item })}
+                        </View>
+                      ))}
+                    </ScrollView>
+                  )
                 )}
 
                 {/* Invite button */}
@@ -509,6 +568,168 @@ export default function GroupHomeScreen() {
         )}
       </Modal>
 
+      <Modal
+        visible={showEditModal}
+        title="Edit Group"
+        showCloseButton
+        size="large"
+        onClose={() => setShowEditModal(false)}
+      >
+        <View style={{ gap: SPACING.md }}>
+          <Input
+            label="Group Name"
+            labelStyle={{ color: COLORS.darkBlue }}
+            value={editForm.name}
+            onChangeText={(v) => setEditForm((p) => ({ ...p, name: v }))}
+            placeholder="Group name"
+            textStyle={{ color: COLORS.darkBlue }}
+          />
+
+          <Input
+            label="Description"
+            labelStyle={{ color: COLORS.darkBlue }}
+            value={editForm.description}
+            onChangeText={(v) => setEditForm((p) => ({ ...p, description: v }))}
+            placeholder="Group description"
+            textStyle={{ color: COLORS.darkBlue }}
+            multiline
+          />
+
+          {/* Difficulty picker */}
+          <Text
+            style={{
+              fontFamily: FONT_USAGE.body,
+              fontSize: FONT_SIZES.md,
+              color: COLORS.darkBlue,
+              marginLeft: SPACING.md,
+            }}
+          >
+            Difficulty
+          </Text>
+          <View style={{ flexDirection: "row", gap: SPACING.sm }}>
+            {["beginner", "intermediate", "advanced"].map((d) => (
+              <TouchableOpacity
+                key={d}
+                onPress={() => setEditForm((p) => ({ ...p, difficulty: d }))}
+                style={{
+                  flex: 1,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: BORDER_RADIUS.md,
+                  borderWidth: 2,
+                  borderColor:
+                    editForm.difficulty === d
+                      ? COLORS.midBlue
+                      : COLORS.lightOrange,
+                  backgroundColor:
+                    editForm.difficulty === d ? COLORS.midBlue : "transparent",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: FONT_USAGE.button,
+                    fontSize: FONT_SIZES.xs,
+                    color:
+                      editForm.difficulty === d
+                        ? COLORS.white
+                        : COLORS.darkBlue,
+                  }}
+                >
+                  {d.charAt(0).toUpperCase() + d.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Visibility picker */}
+          <Text
+            style={{
+              fontFamily: FONT_USAGE.body,
+              fontSize: FONT_SIZES.md,
+              color: COLORS.darkBlue,
+              marginLeft: SPACING.md,
+            }}
+          >
+            Visibility
+          </Text>
+          <View style={{ flexDirection: "row", gap: SPACING.sm }}>
+            {["public", "private"].map((v) => (
+              <TouchableOpacity
+                key={v}
+                onPress={() => setEditForm((p) => ({ ...p, visibility: v }))}
+                style={{
+                  flex: 1,
+                  paddingVertical: SPACING.sm,
+                  borderRadius: BORDER_RADIUS.md,
+                  borderWidth: 2,
+                  borderColor:
+                    editForm.visibility === v
+                      ? COLORS.midBlue
+                      : COLORS.lightOrange,
+                  backgroundColor:
+                    editForm.visibility === v ? COLORS.midBlue : "transparent",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: FONT_USAGE.button,
+                    fontSize: FONT_SIZES.xs,
+                    color:
+                      editForm.visibility === v
+                        ? COLORS.white
+                        : COLORS.darkBlue,
+                  }}
+                >
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Max participants */}
+          <Input
+            label="Max Participants"
+            labelStyle={{ color: COLORS.darkBlue }}
+            value={String(editForm.max_participants)}
+            onChangeText={(v) => {
+              if (v === "") {
+                setEditForm((p) => ({
+                  ...p,
+                  max_participants: 0,
+                }));
+                return;
+              }
+
+              setEditForm((p) => ({
+                ...p,
+                max_participants: parseInt(v),
+              }));
+            }}
+            keyboardType="numeric"
+            textStyle={{ color: COLORS.darkBlue }}
+          />
+
+          <Button
+            title="Save Changes"
+            variant="primary"
+            size="large"
+            fullWidth
+            loading={isUpdating}
+            disabled={isUpdating}
+            onPress={handleUpdateGroup}
+            style={{ marginTop: SPACING.sm }}
+            icon={
+              <MaterialCommunityIcons
+                name="content-save"
+                size={18}
+                color={COLORS.white}
+              />
+            }
+          />
+        </View>
+      </Modal>
+
       <ErrorToast
         visible={toast.visible}
         message={toast.message}
@@ -520,7 +741,10 @@ export default function GroupHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.midDarkBlue },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.midDarkBlue,
+  },
   scrollContent: { padding: SPACING.lg, gap: SPACING.lg },
   // top grid
   topGrid: {
@@ -566,6 +790,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: SPACING.md,
     position: "relative",
+    maxHeight: 400,
   },
   groupInfoLeft: { flexDirection: "row", gap: SPACING.xxxl },
   groupCoverImage: {

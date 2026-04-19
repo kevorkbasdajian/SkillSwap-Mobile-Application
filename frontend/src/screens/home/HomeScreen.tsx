@@ -36,6 +36,7 @@ import { NotificationPanel } from "@/src/components/features/NotificationPanel";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@/src/navigation/types";
+import { useUserSettings } from "@/src/hooks/useUserSettings";
 
 //Type for User role
 type UserRole = "teacher" | "learner";
@@ -80,10 +81,10 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(true);
   //For the + button in the bottom tabs section
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const settings = useUserSettings();
 
   const [showNotifications, setShowNotifications] = useState(false);
   const { unreadCount } = useNotifications();
-  const { signOut } = useAuth();
 
   //---------------Hooks-----------
 
@@ -334,12 +335,6 @@ export default function HomeScreen() {
               color={COLORS.white}
             />
           </TouchableOpacity>
-          <Button
-            title="Sign Out"
-            onPress={() => {
-              signOut();
-            }}
-          />
         </Header>
 
         <ScrollView
@@ -515,7 +510,10 @@ export default function HomeScreen() {
       />
       {/* Notification Panel */}
       {showNotifications && (
-        <NotificationPanel onClose={() => setShowNotifications(false)} />
+        <NotificationPanel
+          onClose={() => setShowNotifications(false)}
+          autoAcceptGroupInvites={settings.auto_accept_group_invites}
+        />
       )}
 
       {/* Floating Notification Button */}

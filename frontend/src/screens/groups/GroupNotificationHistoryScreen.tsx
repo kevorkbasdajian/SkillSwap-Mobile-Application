@@ -55,6 +55,12 @@ export default function GroupNotificationHistoryScreen() {
 
   useEffect(() => {
     loadHistory();
+    setupSocketListener();
+
+    return () => {
+      const socket = getSocket();
+      socket?.off("notification");
+    };
   }, []);
 
   //---------------Functions-----------
@@ -62,9 +68,9 @@ export default function GroupNotificationHistoryScreen() {
     setIsLoading(true);
     try {
       const response = await notificationsAPI.getNotificationHistory(groupId);
+      console.log("Response is", response.data);
       const data = Array.isArray(response.data) ? response.data : [];
       setNotifications(data);
-      setupSocketListener();
     } catch (error: any) {
       toast.showError("Failed to load notification history");
     } finally {
@@ -76,7 +82,7 @@ export default function GroupNotificationHistoryScreen() {
     const socket = getSocket();
     if (!socket) return;
     socket.on("notification", (payload: any) => {
-      const raw = payload.data[0];
+      const raw = payload.data;
 
       const formatted: HistoryNotification = {
         id: raw.notifications.id,
@@ -242,7 +248,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.darkBlue },
   scrollContent: {
     padding: SPACING.xl,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   emptyContainer: {
     alignItems: "center",
@@ -293,7 +299,7 @@ const styles = StyleSheet.create({
   },
   sendButtonContainer: {
     position: "absolute",
-    bottom: 40,
+    bottom: 0,
     left: 0,
     right: 0,
     padding: SPACING.xl,

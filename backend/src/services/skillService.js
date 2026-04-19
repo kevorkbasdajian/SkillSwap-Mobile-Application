@@ -106,7 +106,7 @@ const skillService = {
       .eq("user_id", userId);
 
     if (error) {
-      throw new error(`Failed to fetch user skills: ${error.message}`);
+      throw new Error(`Failed to fetch user skills: ${error.message}`);
     }
 
     return userSkills;

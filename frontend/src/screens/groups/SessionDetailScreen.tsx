@@ -27,6 +27,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "@/src/components/common/Button";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import { useAuth } from "@/src/context/AuthContext";
 
 //Type for navigation
 type SessionDetailNavProp = NativeStackNavigationProp<
@@ -96,7 +97,7 @@ const formatTimeDisplay = (time: string) => {
 
 const calcDuration = (start: string, end: string) => {
   const [sh, sm] = start.split(":").map(Number);
-  const [eh, em] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
   const mins = eh * 60 + em - (sh * 60 + sm);
   return mins > 0 ? `${mins} min` : "N/A";
 };
@@ -156,6 +157,8 @@ export default function SessionDetailScreen() {
   const [actionLoading, setActionLoading] = useState<
     "complete" | "cancel" | null
   >(null);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const { user } = useAuth();
 
   //---------------Hooks-----------
   useEffect(() => {
@@ -177,6 +180,19 @@ export default function SessionDetailScreen() {
       toast.showError("Failed to load session");
     } finally {
       setIsLoading(false);
+    }
+  };
+  //Check-in
+  const handleCheckIn = async () => {
+    setIsCheckingIn(true);
+    try {
+      await sessionsAPI.checkInToSession(sessionId);
+      toast.showSuccess("Checked in successfully!");
+      loadAll();
+    } catch (error: any) {
+      toast.showError(error.response?.data?.error || "Failed to check in");
+    } finally {
+      setIsCheckingIn(false);
     }
   };
   //Change session status to complete
@@ -472,6 +488,41 @@ export default function SessionDetailScreen() {
             />
           </View>
         )}
+        {(() => {
+          const myParticipant = session.session_participants.find(
+            (p) => p.user.id === /* your current user id */ user?.id,
+          );
+          const alreadyCheckedIn =
+            myParticipant?.attendance_status === "present";
+
+          if (!session.is_creator && session.status === "scheduled") {
+            return (
+              <View style={styles.actionsContainer}>
+                <Button
+                  title={alreadyCheckedIn ? "Attending ✓" : "Mark as Attending"}
+                  variant={alreadyCheckedIn ? "outline" : "primary"}
+                  size="large"
+                  fullWidth
+                  loading={isCheckingIn}
+                  disabled={alreadyCheckedIn || isCheckingIn}
+                  onPress={handleCheckIn}
+                  style={
+                    alreadyCheckedIn ? { borderColor: COLORS.success } : {}
+                  }
+                  textStyle={alreadyCheckedIn ? { color: COLORS.success } : {}}
+                  icon={
+                    <MaterialCommunityIcons
+                      name={alreadyCheckedIn ? "check-circle" : "account-check"}
+                      size={20}
+                      color={alreadyCheckedIn ? COLORS.success : COLORS.white}
+                    />
+                  }
+                />
+              </View>
+            );
+          }
+          return null;
+        })()}
       </ScrollView>
       <ErrorToast
         visible={toast.visible}

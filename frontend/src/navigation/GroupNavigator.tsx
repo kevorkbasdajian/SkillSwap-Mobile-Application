@@ -146,18 +146,14 @@ const styles = StyleSheet.create({
   },
   qaBtn: {
     position: "absolute",
-    right: 20,
+    left: 20,
     width: 56,
     height: 56,
     borderRadius: 28,
     backgroundColor: COLORS.lightOrange,
     justifyContent: "center",
     alignItems: "center",
-    elevation: 10,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
+
     zIndex: 9999,
   },
 });

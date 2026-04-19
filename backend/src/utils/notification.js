@@ -36,39 +36,55 @@ const createNotification = async (notificationData) => {
       recipient_id: r,
       is_read: false,
     }));
+    // Ensure array format
+    const payload = Array.isArray(userNotifications)
+      ? userNotifications
+      : [userNotifications];
 
     //Link notification to recipient
-    const { data: userNotification, error: userNotifError } = await supabase
-      .from("user_notifications")
-      .insert(userNotifications)
-      .select(
-        `id,
-        is_read,
-        created_at,
-        notifications (
-          id,
-          related_entity_type,
-          related_entity_id,
-          sender_id,
-          title,
-          message,
-          created_at
-        )
+    const { data: insertedNotifications, error: userNotifError } =
+      await supabase
+        .from("user_notifications")
+        .insert(payload)
+        .select(
+          `id,
+          recipient_id,
+          is_read,
+          created_at,
+          notifications (
+            id,
+            related_entity_type,
+            related_entity_id,
+            sender_id,
+            title,
+            message,
+            created_at,
+            sender:sender_id (
+              id,
+              full_name,
+              nick_name,
+              profile_image_url
+            )
+          )
       `,
-      );
+        );
     if (userNotifError) {
       throw new Error(`Failed to link notification: ${userNotifError.message}`);
     }
 
-    //Emit real-time notification via Socket.io
+    if (!insertedNotifications) return;
+
+    // Emit real-time notifications safely mapped by recipient_id
     const io = getIO();
 
-    recipients.forEach((r) => {
-      io.to(`user:${r}`).emit("notification", {
+    for (const notification of insertedNotifications) {
+      const recipientId = notification.recipient_id;
+
+      io.to(`user:${recipientId}`).emit("notification", {
         type: "new_notification",
-        data: userNotification,
+        data: notification,
       });
-    });
+    }
   } catch (error) {
     console.error("Notification error:", error);
     throw error;

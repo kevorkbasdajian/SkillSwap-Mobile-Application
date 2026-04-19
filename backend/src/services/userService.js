@@ -265,6 +265,13 @@ const userService = {
       .from("user_skills")
       .select(`id,role,proficiency_level,skills(id , name, icon_url)`)
       .eq("user_id", targetUserId);
+
+    //  check:
+    const { data: targetSettings } = await supabase
+      .from("user_settings")
+      .select("show_skills")
+      .eq("user_id", targetUserId)
+      .single();
     return {
       ...user,
       status: {
@@ -275,12 +282,86 @@ const userService = {
       friendshipStatus,
       friendshipId: friendshipId,
 
-      skills: {
-        teaching: skills.filter((s) => s.role === "teacher"),
-        learning: skills.filter((s) => s.role === "learner"),
-      },
+      skills: targetSettings?.show_skills
+        ? {
+            teaching: skills.filter((s) => s.role === "teacher"),
+            learning: skills.filter((s) => s.role === "learner"),
+          }
+        : { teaching: [], learning: [], hidden: true },
       friends: formatted,
     };
+  },
+
+  getUserSettings: async (userId) => {
+    const { data: Settings, error: SettingsError } = await supabase
+      .from("user_settings")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
+    if (SettingsError || !Settings) {
+      throw new Error(
+        `Error while fetching settings: ${SettingsError.message}`,
+      );
+    }
+    return Settings;
+  },
+  updateSettings: async (userId, option, value) => {
+    const { error } = await supabase
+      .from("user_settings")
+      .update({ [option]: value })
+      .eq("user_id", userId);
+    if (error) {
+      throw new Error(`Error while updating settings:${error.message} `);
+    }
+  },
+  deleteUserAccount: async (userId) => {
+    try {
+      // 1. Delete user skills
+      const { error: skillsError } = await supabase
+        .from("user_skills")
+        .delete()
+        .eq("user_id", userId);
+
+      if (skillsError) {
+        throw new Error(`Failed to delete user skills: ${skillsError.message}`);
+      }
+
+      // 2. Delete friendships (both requester and addressee)
+      const { error: friendsError } = await supabase
+        .from("friends")
+        .delete()
+        .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`);
+
+      if (friendsError) {
+        throw new Error(
+          `Failed to delete friendships: ${friendsError.message}`,
+        );
+      }
+
+      // 3. Delete user settings
+      const { error: settingsError } = await supabase
+        .from("user_settings")
+        .delete()
+        .eq("user_id", userId);
+
+      if (settingsError) {
+        throw new Error(`Failed to delete settings: ${settingsError.message}`);
+      }
+
+      // 5. Delete user account
+      const { error: userError } = await supabase
+        .from("users")
+        .delete()
+        .eq("id", userId);
+
+      if (userError) {
+        throw new Error(`Failed to delete user: ${userError.message}`);
+      }
+
+      return { message: "User account deleted successfully" };
+    } catch (error) {
+      throw new Error(error.message);
+    }
   },
 };
 module.exports = userService;

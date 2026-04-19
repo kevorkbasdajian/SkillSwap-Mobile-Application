@@ -23,6 +23,7 @@ export interface NotificationContent {
   message: string;
   related_entity_type: "friendship" | "group" | "session" | "Group General";
   related_entity_id: string;
+  sender_id?: string;
   sender: {
     id: string;
     full_name: string;
@@ -60,6 +61,8 @@ export function NotificationProvider({
   const loadNotifications = useCallback(async () => {
     try {
       const response = await notificationsAPI.getAll();
+      console.log("API notifications:", JSON.stringify(response.data));
+
       if (response.success) {
         setNotifications(response.data);
       }
@@ -89,10 +92,15 @@ export function NotificationProvider({
       });
 
       socket.on("notification", (notification: any) => {
-        setNotifications((prev) => [notification.data[0], ...prev]);
+        console.log("SOCKET notification shape:", JSON.stringify(notification));
+
+        setNotifications((prev) => [notification.data, ...prev]);
+        console.log("-------------------------------------", notification.data);
       });
-      socket.on("group", (notification: Notification) => {
-        setNotifications((prev) => [notification, ...prev]);
+      socket.on("group", (notification: any) => {
+        console.log("SOCKET group shape:", JSON.stringify(notification));
+
+        setNotifications((prev) => [notification.data, ...prev]);
       });
     };
 

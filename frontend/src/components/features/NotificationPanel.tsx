@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import {
   Notification,
@@ -26,14 +26,29 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface NotificationPanelProps {
   onClose: () => void;
+  autoAcceptGroupInvites?: boolean;
 }
 
 export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   onClose,
+  autoAcceptGroupInvites = false,
 }) => {
   const { notifications, markAsRead, markAllAsRead, removeNotification } =
     useNotifications();
   const [actionLoading, setActionLoading] = React.useState<string | null>(null);
+
+  // runs once when panel opens
+  useEffect(() => {
+    if (!autoAcceptGroupInvites) return;
+    notifications.forEach((notification) => {
+      const isGroupInvite =
+        notification.notifications.related_entity_type === "group" &&
+        notification.notifications.title === "Group Invitation";
+      if (isGroupInvite && !notification.is_read) {
+        handleGroupInviteAction(notification, "accept");
+      }
+    });
+  }, [autoAcceptGroupInvites, notifications]);
 
   const handleAcceptFriend = async (notification: Notification) => {
     setActionLoading(notification.id);
@@ -72,6 +87,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
     notification: Notification,
     action: "approve" | "reject",
   ) => {
+    if (actionLoading === notification.id) return;
     setActionLoading(notification.id);
     try {
       //Fetch group details to find the pending member's id
@@ -79,16 +95,26 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
         notification.notifications.related_entity_id,
       );
       if (!res.success) throw new Error("Failed to load group");
+      console.log(notification.notifications);
+      console.log("Response pending are", res.data.pending);
       //Find the pending member whose user_id matches the sender
       const pendingMember = res.data.pending?.find(
         (m: any) => m.user?.id === notification.notifications.sender.id,
       );
+      console.log("Pending member are", pendingMember);
 
       if (!pendingMember) {
-        throw new Error("Join request no longer exists");
+        await markAsRead(notification.id);
+        removeNotification(notification.id);
+        await notificationsAPI.deleteNotification(notification.id);
+
+        return;
       }
+      console.log("Will enter approve");
 
       if (action === "approve") {
+        console.log("Entered approve");
+
         await groupsAPI.approveMember(
           notification.notifications.related_entity_id,
           pendingMember.id,
@@ -101,6 +127,8 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       }
       await markAsRead(notification.id);
       removeNotification(notification.id);
+      await notificationsAPI.deleteNotification(notification.id);
+      console.log("Reached here");
     } catch (error: any) {
       console.error("Group action failed:", error);
     } finally {

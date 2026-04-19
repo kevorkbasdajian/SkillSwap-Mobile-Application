@@ -144,7 +144,7 @@ const sessionService = {
     if (recipientIds.length > 0) {
       await createNotification({
         related_entity_type: "session",
-        related_entity_id: newSession.id,
+        related_entity_id: groupId,
         sender_id: userId,
         recipient_id: recipientIds,
         title: "New Session Scheduled",

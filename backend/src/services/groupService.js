@@ -129,7 +129,7 @@ const groupService = {
     let query = supabase
       .from("groups")
       .select(
-        `id,name,description,difficulty,visibility,cover_image_url,max_participants,created_at,skill:skill_id (id,name,icon_url),group_members (id)`,
+        `id,name,description,difficulty,visibility,cover_image_url,max_participants,created_at,skill:skill_id (id,name,icon_url),group_members (id, user_id, has_joined)`,
       )
       .eq("skill_id", userSkill.skill.id)
       .eq("visibility", "public")
@@ -148,7 +148,7 @@ const groupService = {
     const availableGroups = groups
       .map((group) => {
         const currentParticipants = group.group_members.filter(
-          (member) => member.has_joined !== false,
+          (member) => member.has_joined === true,
         ).length;
         return {
           ...group,
@@ -802,9 +802,20 @@ const groupService = {
     const friends = await friendService.getAllFriends(userId);
     const friendIds = friends.map((f) => f.friend.id);
 
+    const { data: members, error: membersError } = await supabase
+      .from("group_members")
+      .select("user_id")
+      .eq("group_id", groupId);
+    if (membersError) {
+      throw new Error(
+        `Failed to retrieve group members: ${membersError.message}`,
+      );
+    }
+    const memberIds = members.map((m) => m.user_id);
+
     //Filter out to keep only those who are the user's friends
-    const finalFriendsWithInterest = friendsWithInterest.filter((f) =>
-      friendIds.includes(f.user.id),
+    const finalFriendsWithInterest = friendsWithInterest.filter(
+      (f) => friendIds.includes(f.user.id) && !memberIds.includes(f.user.id),
     );
 
     //Change the proficiency_level to difficulty (from number to text)

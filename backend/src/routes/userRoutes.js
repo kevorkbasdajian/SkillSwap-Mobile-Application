@@ -13,6 +13,8 @@ router.use(authenticate);
 
 // GET /api/users/profile - Get current user profile
 router.get("/profile", userController.getProfile);
+router.get("/settings", userController.getUserSettings);
+router.patch("/updateSettings", userController.updateSettings);
 
 // PUT /api/users/profile - Update current user profile
 router.put(
@@ -45,6 +47,9 @@ router.delete("/recent-searches/:userId", userController.removeRecentSearch);
 
 //DELETE /api/users/recent-searches - Delete all recent searches
 router.delete("/recent-searches", userController.clearRecentSearches);
+
+//Delete /api/users/delete-account - Delete user account
+router.delete("/delete-account", userController.deleteUserAccount);
 
 // GET /api/users/:userId/profile - Get a public profile
 router.get("/:userId/profile", userController.getPublicProfile);

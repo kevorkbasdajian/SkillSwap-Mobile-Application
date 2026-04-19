@@ -34,6 +34,7 @@ import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { getSocket } from "@/src/services/socketService";
 import { chatAPI } from "@/src/services/api";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 //Types
 interface Sender {
@@ -733,6 +734,8 @@ export default function GroupChatScreen() {
   const [showCreatePoll, setShowCreatePoll] = useState(false);
   const [isCreatingPoll, setIsCreatingPoll] = useState(false);
 
+  const tabBarHeight = useBottomTabBarHeight();
+
   const isTeacher = user?.id === creatorId;
 
   //---------------Hooks-----------
@@ -1169,8 +1172,8 @@ export default function GroupChatScreen() {
       {/* Messages */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={0}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -1455,7 +1458,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: SPACING.massive * 2,
+    paddingVertical: SPACING.massive * 4,
     gap: SPACING.sm,
   },
   emptyText: {

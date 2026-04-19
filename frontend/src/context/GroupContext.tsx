@@ -1,11 +1,9 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useState } from "react";
 
-//To extract the route props for the GroupMain page
 type GroupMainRouteProp = RouteProp<RootStackParamList, "GroupMain">;
 
-//interface to defined the type of the GroupContext
 interface GroupContextType {
   groupId: number;
   groupName: string;
@@ -18,17 +16,24 @@ interface GroupContextType {
   currentParticipants: number;
   userRole: "teacher" | "learner";
   creatorId: string;
+  description: string;
+  updateGroupInfo: (updates: Partial<GroupContextType>) => void;
 }
+
 const GroupContext = createContext<GroupContextType | undefined>(undefined);
 
 export function GroupProvider({ children }: { children: React.ReactNode }) {
-  //---------------Constants-----------
   const route = useRoute<GroupMainRouteProp>();
+  const [groupInfo, setGroupInfo] = useState(route.params);
 
-  const params = route.params;
+  const updateGroupInfo = (updates: Partial<GroupContextType>) => {
+    setGroupInfo((prev) => ({ ...prev, ...updates }));
+  };
 
   return (
-    <GroupContext.Provider value={params}>{children}</GroupContext.Provider>
+    <GroupContext.Provider value={{ ...groupInfo, updateGroupInfo }}>
+      {children}
+    </GroupContext.Provider>
   );
 }
 

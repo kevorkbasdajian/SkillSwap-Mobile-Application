@@ -83,6 +83,7 @@ export const Modal: React.FC<ModalProps> = ({
               contentContainerStyle={styles.content}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              nestedScrollEnabled={true}
             >
               {children}
             </ScrollView>

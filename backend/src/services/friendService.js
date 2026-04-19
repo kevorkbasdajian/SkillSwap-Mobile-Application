@@ -6,6 +6,16 @@ const { createNotification } = require("../utils/notification");
 const friendService = {
   //Send friend request
   sendFriendRequest: async (requesterId, addresseeId) => {
+    // Check if addressee allows friend requests
+    const { data: addresseeSettings } = await supabase
+      .from("user_settings")
+      .select("allow_friend_requests")
+      .eq("user_id", addresseeId)
+      .single();
+    if (addresseeSettings && !addresseeSettings.allow_friend_requests) {
+      throw new Error("This user is not accepting friend requests");
+    }
+
     //Check if they're already friends or request exists
     const { data: existing } = await supabase
       .from("friends")
