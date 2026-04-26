@@ -32,6 +32,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ErrorToast } from "../../components/common/ErrorToast";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 //Type for the navigation prop
 type SkillsLearnNavigationProp = NativeStackNavigationProp<
@@ -381,13 +382,7 @@ export default function SkillsLearnScreen() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.midBlue} />
-      </View>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>

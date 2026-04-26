@@ -668,6 +668,12 @@ export default function SkillDetailScreen() {
           )}
         </View>
       ) : null}
+      <ErrorToast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={toast.hideToast}
+      />
     </Modal>
   );
 
@@ -824,6 +830,12 @@ export default function SkillDetailScreen() {
         onPress={handleCreateGroup}
         style={styles.createSubmitBtn}
       />
+      <ErrorToast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={toast.hideToast}
+      />
     </Modal>
   );
   return (
@@ -973,12 +985,6 @@ export default function SkillDetailScreen() {
       </ScrollView>
       {role === "learner" && renderJoinModal()}
       {role === "teacher" && renderCreateModal()}
-      <ErrorToast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-        onDismiss={toast.hideToast}
-      />
     </SafeAreaView>
   );
 }

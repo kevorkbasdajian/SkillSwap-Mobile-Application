@@ -24,6 +24,8 @@ import { Button } from "@/src/components/common/Button";
 import { Modal } from "@/src/components/common/Modal";
 import { Input } from "@/src/components/common/Input";
 import { getSocket } from "@/src/services/socketService";
+import { ErrorToast } from "@/src/components/common/ErrorToast";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 interface HistoryNotification {
   id: number;
@@ -55,12 +57,12 @@ export default function GroupNotificationHistoryScreen() {
 
   useEffect(() => {
     loadHistory();
-    setupSocketListener();
+    // setupSocketListener();
 
-    return () => {
-      const socket = getSocket();
-      socket?.off("notification");
-    };
+    // return () => {
+    //   const socket = getSocket();
+    //   socket?.off("notification");
+    // };
   }, []);
 
   //---------------Functions-----------
@@ -78,22 +80,22 @@ export default function GroupNotificationHistoryScreen() {
     }
   };
 
-  const setupSocketListener = () => {
-    const socket = getSocket();
-    if (!socket) return;
-    socket.on("notification", (payload: any) => {
-      const raw = payload.data;
+  // const setupSocketListener = () => {
+  //   const socket = getSocket();
+  //   if (!socket) return;
+  //   socket.on("notification", (payload: any) => {
+  //     const raw = payload.data;
 
-      const formatted: HistoryNotification = {
-        id: raw.notifications.id,
-        title: raw.notifications.title,
-        message: raw.notifications.message,
-        created_at: raw.notifications.created_at,
-      };
+  //     const formatted: HistoryNotification = {
+  //       id: raw.notifications.id,
+  //       title: raw.notifications.title,
+  //       message: raw.notifications.message,
+  //       created_at: raw.notifications.created_at,
+  //     };
 
-      setNotifications((prev) => [...prev, formatted]);
-    });
-  };
+  //     setNotifications((prev) => [...prev, formatted]);
+  //   });
+  // };
 
   const handleSend = async () => {
     if (title.trim().length < 3) {
@@ -121,7 +123,9 @@ export default function GroupNotificationHistoryScreen() {
       setIsSending(false);
     }
   };
-
+  if (isLoading) {
+    return <LoadingScreen variant="orange" />;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <Header
@@ -134,13 +138,7 @@ export default function GroupNotificationHistoryScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={COLORS.lightBlue}
-            style={{ marginTop: SPACING.massive }}
-          />
-        ) : notifications.length === 0 ? (
+        {notifications.length === 0 ? (
           <View style={styles.emptyContainer}>
             <MaterialCommunityIcons
               name="bell-off-outline"
@@ -239,6 +237,12 @@ export default function GroupNotificationHistoryScreen() {
               }
             />
           </View>
+          <ErrorToast
+            visible={toast.visible}
+            message={toast.message}
+            type={toast.type}
+            onDismiss={toast.hideToast}
+          />
         </Modal>
       )}
     </SafeAreaView>

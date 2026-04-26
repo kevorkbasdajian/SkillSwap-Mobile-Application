@@ -35,6 +35,7 @@ import { getSocket } from "@/src/services/socketService";
 import { chatAPI } from "@/src/services/api";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 //Types
 interface Sender {
@@ -1123,6 +1124,9 @@ export default function GroupChatScreen() {
 
   const [latestPinned, setLatestPinned] = useState<ChatMessage | null>(null);
 
+  if (isLoading) {
+    return <LoadingScreen variant="orange" />;
+  }
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       {/* Header */}
@@ -1175,47 +1179,41 @@ export default function GroupChatScreen() {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
       >
-        {isLoading ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.lightBlue} />
-          </View>
-        ) : (
-          <FlatList
-            ref={flatListRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.messagesList}
-            showsVerticalScrollIndicator={false}
-            onStartReachedThreshold={0.1}
-            onStartReached={handleLoadMore}
-            ListHeaderComponent={
-              isLoading ? (
-                <ActivityIndicator
-                  size="small"
-                  color={COLORS.lightBlue}
-                  style={{ marginVertical: SPACING.md }}
-                />
-              ) : null
-            }
-            ListEmptyComponent={
-              <View style={styles.emptyContainer}>
-                <MaterialCommunityIcons
-                  name="chat-outline"
-                  size={60}
-                  color={COLORS.midDarkBlue}
-                />
-                <Text style={styles.emptyText}>No messages yet</Text>
-                <Text style={styles.emptySubtext}>
-                  Be the first to say something!
-                </Text>
-              </View>
-            }
-            onContentSizeChange={() =>
-              flatListRef.current?.scrollToEnd({ animated: false })
-            }
-          />
-        )}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          renderItem={renderMessage}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messagesList}
+          showsVerticalScrollIndicator={false}
+          onStartReachedThreshold={0.1}
+          onStartReached={handleLoadMore}
+          ListHeaderComponent={
+            isLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={COLORS.lightBlue}
+                style={{ marginVertical: SPACING.md }}
+              />
+            ) : null
+          }
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="chat-outline"
+                size={60}
+                color={COLORS.midDarkBlue}
+              />
+              <Text style={styles.emptyText}>No messages yet</Text>
+              <Text style={styles.emptySubtext}>
+                Be the first to say something!
+              </Text>
+            </View>
+          }
+          onContentSizeChange={() =>
+            flatListRef.current?.scrollToEnd({ animated: false })
+          }
+        />
 
         {/* Input area */}
         <View style={styles.inputArea}>

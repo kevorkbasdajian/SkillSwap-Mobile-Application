@@ -7,13 +7,21 @@ import {
 } from "../../constants";
 import { useGroupContext } from "@/src/context/GroupContext";
 import { useErrorToast } from "@/src/hooks/useErrorToast";
-import { GroupStackParamList } from "@/src/navigation/types";
-import { groupsAPI } from "@/src/services/api";
-import { useNavigation } from "@react-navigation/native";
+import {
+  GroupStackParamList,
+  RootStackParamList,
+} from "@/src/navigation/types";
+import { groupsAPI, sessionsAPI } from "@/src/services/api";
+import {
+  CommonActions,
+  CompositeNavigationProp,
+  useNavigation,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   ScrollView,
@@ -33,8 +41,10 @@ import { Input } from "@/src/components/common/Input";
 import { GradientBackground } from "@/src/components/common/GradientBackground";
 import { useAuth } from "@/src/context/AuthContext";
 
-type GroupHomeNavProp = NativeStackNavigationProp<GroupStackParamList>;
-
+type GroupHomeNavProp = CompositeNavigationProp<
+  NativeStackNavigationProp<GroupStackParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 interface Member {
   id: number;
   user: {
@@ -54,6 +64,17 @@ interface FriendWithInterest {
     profile_image_url?: string;
   };
   proficiency_level: number;
+}
+interface session {
+  id: string;
+  title: string;
+  description: string;
+  session_type: string;
+  scheduled_date: string;
+  start_time: string;
+  end_time: string;
+  status: "scheduled" | "completed" | "cancelled";
+  created_at: string;
 }
 
 export default function GroupHomeScreen() {
@@ -94,6 +115,7 @@ export default function GroupHomeScreen() {
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const isTeacher = user?.id === creatorId;
+  const [upcomingSession, setUpcomingSession] = useState<session | null>(null);
 
   //Edit the group
   const [showEditModal, setShowEditModal] = useState(false);
@@ -122,7 +144,22 @@ export default function GroupHomeScreen() {
     }
   }, [friendSearchQuery, friendsWithInterest]);
 
+  useEffect(() => {
+    getUpcomingSession(groupId);
+  }, []);
+
   //---------------Functions-----------
+  const getUpcomingSession = async (groupId: number) => {
+    try {
+      const response = await sessionsAPI.getUpcomingSession(groupId);
+      if (response.success) {
+        console.log("Response data is:", response.data);
+        setUpcomingSession(response.data[0]);
+      }
+    } catch (error: any) {
+      toast.showError("Failed to get upcoming session");
+    }
+  };
   const loadMembers = async () => {
     setIsLoadingMembers(true);
     try {
@@ -158,6 +195,80 @@ export default function GroupHomeScreen() {
     setShowParticipants(true);
     loadMembers();
     loadFriendsWithInterest();
+  };
+
+  const handleLeaveGroup = (groupId: number) => {
+    Alert.alert(
+      "Leave Group",
+      "Are you sure you want to leave this group?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await groupsAPI.leaveGroup(groupId);
+
+              Alert.alert("Success", "You left the group");
+
+              // optional: navigate away
+              navigation.navigate("Main", {
+                screen: "Home",
+              });
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Failed to leave group");
+            }
+          },
+        },
+      ],
+      { cancelable: true },
+    );
+  };
+
+  const handleDeleteGroup = (groupId: number) => {
+    Alert.alert(
+      "Delete Group",
+      "Are you sure you want to permanently delete this group?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await groupsAPI.deleteGroup(groupId);
+
+              Alert.alert("Deleted", "Group has been deleted");
+
+              // Reset navigation (prevents going back to deleted group)
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [
+                    {
+                      name: "Main",
+                      params: { screen: "Home" }, // or "Home"
+                    },
+                  ],
+                }),
+              );
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "Failed to delete group");
+            }
+          },
+        },
+      ],
+      { cancelable: true },
+    );
   };
 
   const handleRemoveMember = async (memberId: number) => {
@@ -426,15 +537,24 @@ export default function GroupHomeScreen() {
             </View>
 
             {/* Session placeholder */}
-            <View style={styles.sessionPlaceholder}>
-              <Text style={styles.sessionPlaceholderText}>Start Session 3</Text>
+            <TouchableOpacity
+              style={styles.sessionPlaceholder}
+              onPress={() =>
+                navigation.navigate("GroupTabs", {
+                  screen: "GroupSessions",
+                })
+              }
+            >
+              <Text style={styles.sessionPlaceholderText}>
+                Start {upcomingSession?.title}
+              </Text>
               <MaterialCommunityIcons
                 name="arrow-right-circle"
                 size={24}
                 color={COLORS.darkBlue}
                 style={{ alignSelf: "flex-end" }}
               />
-            </View>
+            </TouchableOpacity>
           </View>
 
           {/* Edit button */}
@@ -457,6 +577,48 @@ export default function GroupHomeScreen() {
                 size={18}
                 color={COLORS.white}
               />
+            </TouchableOpacity>
+          )}
+          {!isTeacher && (
+            <TouchableOpacity
+              style={styles.leaveGroup}
+              onPress={() => handleLeaveGroup(groupId)}
+            >
+              <MaterialCommunityIcons
+                name="exit-to-app"
+                size={20}
+                color={COLORS.error}
+              />
+              <Text
+                style={{
+                  color: COLORS.error,
+                  fontFamily: FONT_USAGE.button,
+                  fontWeight: "bold",
+                }}
+              >
+                Leave Group
+              </Text>
+            </TouchableOpacity>
+          )}
+          {isTeacher && (
+            <TouchableOpacity
+              style={styles.leaveGroup}
+              onPress={() => handleDeleteGroup(groupId)}
+            >
+              <MaterialCommunityIcons
+                name="delete"
+                size={20}
+                color={COLORS.error}
+              />
+              <Text
+                style={{
+                  color: COLORS.error,
+                  fontFamily: FONT_USAGE.button,
+                  fontWeight: "bold",
+                }}
+              >
+                Delete Group
+              </Text>
             </TouchableOpacity>
           )}
         </GradientBackground>
@@ -952,5 +1114,19 @@ const styles = StyleSheet.create({
   sectionLeft: {
     gap: SPACING.sm,
     alignItems: "center",
+  },
+  leaveGroup: {
+    position: "absolute",
+    bottom: 10,
+    alignSelf: "center",
+
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
+    borderRadius: BORDER_RADIUS.xxxl,
+    backgroundColor: COLORS.lightGray,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 5,
   },
 });

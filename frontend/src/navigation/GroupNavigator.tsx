@@ -109,7 +109,7 @@ function GroupNavigatorContent() {
       {userRole === "learner" && (
         <>
           <TouchableOpacity
-            style={[styles.qaBtn, { bottom: 72 + insets.bottom }]}
+            style={[styles.qaBtn, { bottom: 132 + insets.bottom }]}
             onPress={() => setShowQA(true)}
             activeOpacity={0.85}
           >
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   },
   qaBtn: {
     position: "absolute",
-    left: 20,
+    right: 30,
     width: 56,
     height: 56,
     borderRadius: 28,

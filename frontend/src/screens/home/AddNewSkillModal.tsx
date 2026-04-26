@@ -16,9 +16,10 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  TextInput,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useErrorToast } from "@/src/hooks/useErrorToast";
 import { skillsAPI } from "@/src/services/api";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
@@ -32,6 +33,12 @@ interface Skill {
   name: string;
   icon_url: string;
   is_default: boolean;
+}
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  return Array.from({ length: Math.ceil(arr.length / size) }, (_, i) =>
+    arr.slice(i * size, i * size + size),
+  );
 }
 
 export default function AddNewSkillModal() {
@@ -66,6 +73,44 @@ export default function AddNewSkillModal() {
   const [skillRole, setSkillRole] = useState<"teacher" | "learner" | "">("");
   const [level, setLevel] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  //For searching the icons
+  const [query, setQuery] = useState("");
+
+  // Keyword → icon name overrides for non-obvious searches
+  const KEYWORD_HINTS: Record<string, string[]> = {
+    "c language": ["language-c"],
+    "c programming": ["language-c"],
+    "c++": ["language-cpp"],
+    cpp: ["language-cpp"],
+    python: ["language-python"],
+    java: ["language-java"],
+    javascript: ["language-javascript"],
+    js: ["language-javascript"],
+    typescript: ["language-typescript"],
+    "c#": ["language-csharp"],
+    csharp: ["language-csharp"],
+    golang: ["language-go"],
+    programming: ["code-braces", "terminal"],
+    coding: ["code-tags", "code-braces"],
+    guitar: ["guitar-acoustic", "guitar-electric"],
+    singing: ["microphone", "music"],
+    drawing: ["draw", "pencil", "brush"],
+    painting: ["palette", "brush"],
+    photography: ["camera"],
+    cooking: ["chef-hat", "pot-mix", "silverware-fork-knife"],
+    baking: ["bread-slice", "chef-hat"],
+    fitness: ["run", "yoga", "weight-lifter"],
+    swimming: ["swim"],
+    cycling: ["bike"],
+    gardening: ["leaf", "sprout", "flower"],
+    woodworking: ["hammer", "wrench"],
+  };
+
+  //Pull every icon name straight from the bundled glyph map
+  const ALL_ICON_NAMES: string[] = Object.keys(
+    (MaterialCommunityIcons as any).glyphMap,
+  );
 
   //---------------Hooks-----------
 
@@ -157,6 +202,46 @@ export default function AddNewSkillModal() {
       setIsSubmitting(false);
     }
   };
+
+  //For calculating the results of the icons
+  const results = useMemo(() => {
+    const q = query.toLowerCase().trim();
+
+    if (!q) {
+      //Default view: show a broad useful starting set
+      return ALL_ICON_NAMES.slice(0, 60);
+    }
+
+    //1. Collect keyword-hint boosts
+    const boosted = new Set<string>();
+    for (const [kw, icons] of Object.entries(KEYWORD_HINTS)) {
+      if (kw.includes(q) || q.includes(kw)) {
+        icons.forEach((i) => boosted.add(i));
+      }
+    }
+
+    const words = q.split(/\s+/).filter((w) => w.length > 1);
+
+    //2. Score every icon name
+    const scored = ALL_ICON_NAMES.map((name) => {
+      let score = 0;
+      if (boosted.has(name)) score += 100;
+      if (name === q) score += 90; //exact match
+      if (name.startsWith(q)) score += 50; //prefix match
+      if (name.includes(q)) score += 30; //substring match
+      words.forEach((w) => {
+        if (name.startsWith(w)) score += 20;
+        else if (name.includes(w)) score += 10;
+      });
+      return { name, score };
+    });
+
+    return scored
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((s) => s.name);
+  }, [query]);
+
   //Create a new skill
   const handleCreateSkill = async () => {
     if (!newSkillName.trim()) {
@@ -379,7 +464,7 @@ export default function AddNewSkillModal() {
         placeholder="e.g., Pottery"
         textStyle={{ color: COLORS.darkBlue }}
       />
-      <Input
+      {/* <Input
         label="Icon (MaterialCommunityIcons name)"
         labelStyle={styles.sectionLabel}
         value={newSkillIcon}
@@ -394,7 +479,94 @@ export default function AddNewSkillModal() {
             color={COLORS.midBlue}
           />
         }
-      />
+      /> */}
+
+      <View style={styles.iconcontainer}>
+        <Text
+          style={[
+            { textAlign: "left", marginLeft: SPACING.md },
+            styles.modalLabel,
+          ]}
+        >
+          Icon
+        </Text>
+
+        {/* Search input */}
+        <View style={styles.searchRow}>
+          <MaterialCommunityIcons
+            name="magnify"
+            size={18}
+            color={COLORS.midBlue}
+          />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search icons... e.g. guitar"
+            placeholderTextColor={COLORS.midBlue + "88"}
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery("")}>
+              <MaterialCommunityIcons
+                name="close-circle"
+                size={20}
+                color={COLORS.error}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Results count hint */}
+        {query.length > 0 && (
+          <Text style={styles.hint}>
+            {results.length} icon{results.length !== 1 ? "s" : ""} found
+            {results.length > 60 ? " - refine your search to narrow down" : ""}
+          </Text>
+        )}
+
+        {/* Icon grid - capped at 60 rendered items for performance */}
+        <View
+          style={[
+            styles.gridWrapper,
+            results.length > 0 && {
+              borderWidth: 1,
+              borderColor: COLORS.midBlue,
+            },
+          ]}
+        >
+          <ScrollView
+            style={styles.grid}
+            keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+          >
+            {chunk(results.slice(0, 60), 4).map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.row}>
+                {row.map((item) => {
+                  const isSelected = item === newSkillIcon;
+                  return (
+                    <TouchableOpacity
+                      key={item}
+                      style={[
+                        styles.iconBtn,
+                        isSelected && styles.iconBtnSelected,
+                      ]}
+                      onPress={() => setNewSkillIcon(item)}
+                    >
+                      <MaterialCommunityIcons
+                        name={item as any}
+                        size={26}
+                        color={isSelected ? COLORS.white : COLORS.midBlue}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      </View>
 
       {renderRoleAndLevel()}
 
@@ -616,4 +788,75 @@ const styles = StyleSheet.create({
   },
 
   submitBtn: { marginTop: SPACING.md, width: "100%" },
+  iconcontainer: {
+    gap: 8,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: COLORS.darkBlue,
+    borderRadius: BORDER_RADIUS.lg,
+    paddingHorizontal: SPACING.xl,
+    paddingVertical: 4,
+    backgroundColor: COLORS.white,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.darkBlue,
+  },
+  gridWrapper: {
+    maxHeight: 220,
+
+    borderRadius: BORDER_RADIUS.md,
+    overflow: "hidden",
+  },
+  hint: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.midBlue,
+    marginLeft: SPACING.md,
+  },
+  noResults: {
+    textAlign: "center",
+    color: COLORS.error,
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.sm,
+    marginBlock: "auto",
+  },
+  grid: {
+    padding: 4,
+  },
+  row: {
+    gap: 4,
+    marginBottom: 4,
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  iconBtn: {
+    // flex: 1,
+    width: "23%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 8,
+    borderRadius: BORDER_RADIUS.md,
+    borderWidth: 1,
+    borderColor: COLORS.midBlue + "44",
+    backgroundColor: COLORS.lightGray,
+    gap: 2,
+    minWidth: 0,
+  },
+  iconBtnSelected: {
+    backgroundColor: COLORS.midBlue,
+    borderColor: COLORS.darkBlue,
+  },
+  modalLabel: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.md,
+    color: COLORS.darkBlue,
+    marginBottom: SPACING.xs,
+  },
 });

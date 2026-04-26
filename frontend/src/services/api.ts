@@ -200,6 +200,11 @@ export const groupsAPI = {
     });
     return response.data;
   },
+  //delete a group
+  deleteGroup: async (groupId: number) => {
+    const response = await api.delete(`/groups/${groupId}`);
+    return response.data;
+  },
   //Approve Member
   approveMember: async (groupId: string, memberId: string) => {
     try {
@@ -279,6 +284,11 @@ export const groupsAPI = {
     } catch (error: any) {
       console.error(error.response.data);
     }
+  },
+  //leave a group
+  leaveGroup: async (groupId: number) => {
+    const response = await api.delete(`/groups/${groupId}/leave`);
+    return response.data;
   },
 };
 
@@ -411,6 +421,10 @@ export const sessionsAPI = {
   },
   checkInToSession: async (sessionId: string) => {
     const response = await api.post(`/sessions/${sessionId}/check-in`);
+    return response.data;
+  },
+  getUpcomingSession: async (groupId: number) => {
+    const response = await api.get(`/sessions/${groupId}/upcoming`);
     return response.data;
   },
 };

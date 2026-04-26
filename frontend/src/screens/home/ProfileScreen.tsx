@@ -35,6 +35,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Input } from "@/src/components/common/Input";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Button } from "@/src/components/common/Button";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 // Type for navigation
 type NavigationProp = CompositeNavigationProp<
@@ -311,15 +312,16 @@ export default function ProfileScreen() {
     );
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.midBlue} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <SafeAreaView style={styles.container}>
+  //       <View style={styles.loadingContainer}>
+  //         <ActivityIndicator size="large" color={COLORS.midBlue} />
+  //       </View>
+  //     </SafeAreaView>
+  //   );
+  // }
+  if (loading) return <LoadingScreen />;
 
   return (
     <SafeAreaView style={styles.container}>

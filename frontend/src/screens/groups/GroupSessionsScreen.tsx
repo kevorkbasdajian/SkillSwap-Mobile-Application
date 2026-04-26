@@ -38,6 +38,7 @@ import { Header } from "@/src/components/navigation/NavHeader";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import { GradientBackground } from "@/src/components/common/GradientBackground";
 import LottieView from "lottie-react-native";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 // type for navigation
 type GroupSessionsNavProp = CompositeNavigationProp<
@@ -545,10 +546,18 @@ export default function GroupSessionsScreen() {
             }
           />
         </View>
+        <ErrorToast
+          visible={toast.visible}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={toast.hideToast}
+        />
       </Modal>
     );
   };
-
+  if (isLoading) {
+    return <LoadingScreen variant="orange" />;
+  }
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
@@ -556,100 +565,61 @@ export default function GroupSessionsScreen() {
         showBackButton={false}
         style={{ backgroundColor: COLORS.darkGray }}
       />
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.lightBlue} />
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* Session cards */}
-          {sessions.map((session, index) => renderSessionCard(session, index))}
 
-          {/* Create Session card */}
-          {/* <TouchableOpacity
-            style={styles.createCard}
-            onPress={() => setShowCreateModal(true)}
-            activeOpacity={0.8}
-          >
-            <View style={styles.createCardLeft}>
-              <MaterialCommunityIcons
-                name="timer-sand"
-                size={40}
-                color={COLORS.skinToneOrange}
-              />
-            </View>
-            <Text style={styles.createCardTitle}>Create Session</Text>
-            <View style={styles.createCardRight}>
-              <MaterialCommunityIcons
-                name="laptop-account"
-                size={50}
-                color={COLORS.skinToneOrange2}
-              />
-            </View>
-            <View style={styles.createCardPlus}>
-              <MaterialCommunityIcons
-                name="plus"
-                size={20}
-                color={COLORS.white}
-              />
-            </View>
-          </TouchableOpacity> */}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Session cards */}
+        {sessions.map((session, index) => renderSessionCard(session, index))}
 
-          {userRole === "teacher" && (
-            <View style={{ marginTop: SPACING.massive }}>
-              <GradientBackground
-                variant="darkBlueToMidLightBlue"
-                style={styles.sessionCard}
+        {/* Create Session card */}
+        {userRole === "teacher" && (
+          <View style={{ marginTop: SPACING.massive }}>
+            <GradientBackground
+              variant="darkBlueToMidLightBlue"
+              style={styles.sessionCard}
+            >
+              <TouchableOpacity
+                onPress={() => setShowCreateModal(true)}
+                activeOpacity={0.8}
+                style={styles.sessionCardContainer}
               >
-                <TouchableOpacity
-                  onPress={() => setShowCreateModal(true)}
-                  activeOpacity={0.8}
-                  style={styles.sessionCardContainer}
-                >
-                  <View style={styles.header}>
-                    <Text
-                      style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
-                    >
-                      Create Session
-                    </Text>
+                <View style={styles.header}>
+                  <Text
+                    style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
+                  >
+                    Create Session
+                  </Text>
+                  <MaterialCommunityIcons
+                    name="plus"
+                    size={28}
+                    color={COLORS.white}
+                  />
+                </View>
+
+                <View style={styles.sessionCardBottom}>
+                  <View style={styles.durationRow}>
                     <MaterialCommunityIcons
-                      name="plus"
-                      size={28}
-                      color={COLORS.white}
+                      name="timer-sand"
+                      size={40}
+                      color={COLORS.lightBlue}
                     />
                   </View>
+                </View>
+                <LottieView
+                  source={require("../../assets/animations/createSessionAnimation.json")}
+                  autoPlay
+                  loop
+                  style={styles.animation}
+                />
+              </TouchableOpacity>
+            </GradientBackground>
+          </View>
+        )}
+      </ScrollView>
 
-                  <View style={styles.sessionCardBottom}>
-                    <View style={styles.durationRow}>
-                      <MaterialCommunityIcons
-                        name="timer-sand"
-                        size={40}
-                        color={COLORS.lightBlue}
-                      />
-                    </View>
-                  </View>
-                  <LottieView
-                    source={require("../../assets/animations/createSessionAnimation.json")}
-                    autoPlay
-                    loop
-                    style={styles.animation}
-                  />
-                </TouchableOpacity>
-              </GradientBackground>
-            </View>
-          )}
-        </ScrollView>
-      )}
       {userRole === "teacher" && renderCreateModal()}
-      <ErrorToast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-        onDismiss={toast.hideToast}
-      />
     </SafeAreaView>
   );
 }

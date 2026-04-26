@@ -28,6 +28,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "@/src/components/common/Button";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import { useAuth } from "@/src/context/AuthContext";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 //Type for navigation
 type SessionDetailNavProp = NativeStackNavigationProp<
@@ -256,20 +257,22 @@ export default function SessionDetailScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <Header
-          title="Session Details"
-          showBackButton
-          handleOnPress={() => navigation.goBack()}
-        />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.lightBlue} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <SafeAreaView style={styles.container}>
+  //       <Header
+  //         title="Session Details"
+  //         showBackButton
+  //         handleOnPress={() => navigation.goBack()}
+  //       />
+  //       <View style={styles.loadingContainer}>
+  //         <ActivityIndicator size="large" color={COLORS.lightBlue} />
+  //       </View>
+  //     </SafeAreaView>
+  //   );
+  // }
+  if (isLoading) return <LoadingScreen />;
+
   if (!session) {
     console.log("sjsks");
     return null;

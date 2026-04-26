@@ -27,6 +27,7 @@ import { Header } from "@/src/components/navigation/NavHeader";
 import { Button } from "@/src/components/common/Button";
 import { Modal } from "@/src/components/common/Modal";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
+import { LoadingScreen } from "@/src/components/common/LoadingScreen";
 
 type UserProfileRouteProp = RouteProp<RootStackParamList, "UserProfile">;
 type UserProfileNavigationProp = NativeStackNavigationProp<
@@ -325,15 +326,7 @@ export default function UserProfileScreen() {
     );
   };
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.midBlue} />
-        </View>
-      </SafeAreaView>
-    );
-  }
+  if (isLoading) return <LoadingScreen />;
 
   if (!profile) {
     return null;

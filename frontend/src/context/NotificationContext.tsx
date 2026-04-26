@@ -64,7 +64,13 @@ export function NotificationProvider({
       console.log("API notifications:", JSON.stringify(response.data));
 
       if (response.success) {
-        setNotifications(response.data);
+        const filtered = response.data.filter(
+          (n: Notification) =>
+            n.notifications.related_entity_type !== "Group General" &&
+            n.notifications.related_entity_type !== "session",
+        );
+
+        setNotifications(filtered);
       }
     } catch (error) {
       console.error("Failed to load notifications:", error);
@@ -91,11 +97,23 @@ export function NotificationProvider({
         setIsConnected(false);
       });
 
+      // socket.on("notification", (notification: any) => {
+      //   console.log("SOCKET notification shape:", JSON.stringify(notification));
+
+      //   setNotifications((prev) => [notification.data, ...prev]);
+      //   console.log("-------------------------------------", notification.data);
+      // });
       socket.on("notification", (notification: any) => {
         console.log("SOCKET notification shape:", JSON.stringify(notification));
 
-        setNotifications((prev) => [notification.data, ...prev]);
-        console.log("-------------------------------------", notification.data);
+        const newNotif = notification.data;
+        const type = newNotif.notifications?.related_entity_type;
+
+        if (type !== "Group General" && type !== "session") {
+          setNotifications((prev) => [newNotif, ...prev]);
+        }
+
+        console.log("-------------------------------------", newNotif);
       });
       socket.on("group", (notification: any) => {
         console.log("SOCKET group shape:", JSON.stringify(notification));
