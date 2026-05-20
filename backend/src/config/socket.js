@@ -8,7 +8,7 @@ const config = require("./env");
 
 let io;
 
-//Takes HTTP server as input, attaches Socket.io to i, configures it, and returns the io instance.
+// Takes HTTP server as input, attaches Socket.io to it, configures it, and returns the io instance.
 const initializeSOcket = (server) => {
   io = new Server(server, {
     cors: {
@@ -94,7 +94,7 @@ module.exports = { initializeSOcket, getIO };
 /*
 1- initializeSocket: Takes the backend http server, attaches socket.io to it, and configures it.
 2- 2nd step is authentication of the user through verifying the token provided, and attaching the userId and userEmail to the socket.
-3- 3rd step is to listen for connection, and once detected is to create a room for the connected user, and join it to the server. Next
+3- 3rd step is to listen for connection, and once detected, create a room for the connected user, and join it to the server. Next
 that socket should listen for the event of disconnection.
 4- getIo: returns the instance of the server.
 */

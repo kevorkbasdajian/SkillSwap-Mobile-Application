@@ -24,7 +24,7 @@ module.exports = validate;
 
 /*
 1- This function returns a middleware function that checks data against a schema
-2- if errors exist, we return an array of errors, indicating from where is the error coming
+2- If errors exist, we return an array of errors, indicating where is the error coming from
 and what is the message of the error.
 3- Otherwise, we assign the validatedData of the req to be the value returned from schema.validate
 */

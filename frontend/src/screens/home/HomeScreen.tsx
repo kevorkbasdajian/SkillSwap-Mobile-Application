@@ -312,7 +312,7 @@ export default function HomeScreen() {
         style={{ flex: 1, backgroundColor: COLORS.darkGray }}
       >
         {/* Header */}
-        <Header title="Homeage" showBackButton={false} style={styles.header}>
+        <Header title="Homepage" showBackButton={false} style={styles.header}>
           {/* Role Toggle Button */}
           <TouchableOpacity
             style={styles.roleButton}

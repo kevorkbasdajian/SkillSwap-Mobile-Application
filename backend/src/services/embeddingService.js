@@ -56,7 +56,7 @@ const embeddingService = {
     }
   },
 
-  // Spplit text into chunks (for processing large documents)
+  // Split text into chunks (for processing large documents)
   chunkText: (text, chunkSize = 500, overlap = 50) => {
     const words = text.split(/\s+/);
     const chunks = [];

@@ -33,8 +33,6 @@ type ResetPasswordNavigationProp = NativeStackNavigationProp<
   AuthStackParamList,
   "ResetPassword"
 >;
-//type needed to extract token parameter
-type ResetPasswordRouteProp = RouteProp<AuthStackParamList, "ResetPassword">;
 
 //interface needed for Formik's form
 interface ResetPasswordFormValues {
@@ -46,10 +44,9 @@ export default function ResetPasswordScreen() {
   //---------------Constants-----------
   //navigation constant
   const navigation = useNavigation<ResetPasswordNavigationProp>();
-  //route constant for parameter extraction
-  const route = useRoute<ResetPasswordRouteProp>();
+
   //To store the extracted change password token
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   //Formik's form initial values
@@ -57,15 +54,6 @@ export default function ResetPasswordScreen() {
     password: "",
     confirmPassword: "",
   };
-  //---------------Hooks-----------
-  useEffect(() => {
-    // Get token from route params (from deep link)
-    if (route.params?.token) {
-      setToken(route.params.token);
-    } else {
-      setErrorMessage("Invalid or missing reset token");
-    }
-  }, [route.params]);
 
   //---------------Functions-----------
   //1-handleResetPassword: Checks if token exists and then calls the resetPassword from authAPI. redirection to Login is handled in the
@@ -170,6 +158,21 @@ export default function ResetPasswordScreen() {
                 isSubmitting,
               }) => (
                 <>
+                  {/* Token Input */}
+                  <View>
+                    <Text style={styles.inputLabel}>Reset Token</Text>
+                    <View style={styles.inputWrapper}>
+                      <Input
+                        value={token}
+                        onChangeText={setToken}
+                        placeholder="Paste your token here"
+                        autoCapitalize="none"
+                        inputStyle={styles.input}
+                        textStyle={{ color: COLORS.darkBlue }}
+                      />
+                    </View>
+                  </View>
+
                   {/* Password Input */}
                   <View>
                     <Text style={styles.inputLabel}>New Password</Text>
@@ -225,7 +228,7 @@ export default function ResetPasswordScreen() {
                     title="Change Password"
                     onPress={handleSubmit}
                     loading={isSubmitting}
-                    disabled={isSubmitting || !token}
+                    disabled={isSubmitting || !token.trim()}
                     variant="primary"
                     size="large"
                     style={styles.submitButton}
@@ -240,7 +243,10 @@ export default function ResetPasswordScreen() {
       <Modal
         title="Password Reset!"
         visible={showModal}
-        onClose={() => navigation.navigate("Login")}
+        onClose={() => {
+          setShowModal(false);
+          navigation.navigate("Login");
+        }}
         showCloseButton={true}
         size="medium"
       >

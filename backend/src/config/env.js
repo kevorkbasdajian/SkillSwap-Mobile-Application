@@ -10,7 +10,7 @@ const config = {
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:8081",
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresin: process.env.JWT_EXPIRE_IN || "7d",
+    expiresin: process.env.JWT_EXPIRES_IN || "7d",
   },
   supabase: {
     url: process.env.SUPABASE_URL,

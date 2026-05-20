@@ -34,9 +34,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
-app.get("/reset-password", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "reset-password.html"));
-});
 
 //API routes
 app.use("/api/auth", authRoutes);
@@ -78,15 +75,15 @@ app.use((err, req, res, next) => {
 module.exports = app;
 
 /*DOCUMENTATION
-1- we import the needed libraries. cors allows other servers to communicate.
-helmet ensures security by setting HTTP headers.
-config file streamlines the environment variables needed.
-2- setup the 'app' express server.
-3- using json to allow and accept json data sent by the frontend.
-4-urlencoded is to read and change the variables that are part of the link such as key=value&key2=value2.
-5- Health check endpoint responds to GET requests to check if the API is working.
+1- We import the needed libraries.
+  Cors allows other servers to communicate.
+  Helmet ensures security by setting HTTP headers.
+  Config file streamlines the environment variables needed.
+2- Setup the 'app' express server.
+3- Using json to allow and accept json data sent by the frontend.
+4- Urlencoded is to read and change the variables that are part of the link such as key=value&key2=value2.
+5- Health check endpoint responds to GET request to check if the API is working.
 6- 404 handler is to respond to request paths that do not exist.
-7- Custom error handler called whenever next(err) or error is thrown. returns
-the error message or internal server error and if in development mode the error stack.
-8- Routes section: register the individual routes and assign them unique paths.
+7- Custom error handler called whenever next(err) or error is thrown. returns the error message or internal server error and if in development mode the error stack.
+8- Routes section: Register the individual routes and assign them unique paths.
 */

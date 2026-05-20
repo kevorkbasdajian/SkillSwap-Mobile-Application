@@ -153,7 +153,6 @@ export default function GroupHomeScreen() {
     try {
       const response = await sessionsAPI.getUpcomingSession(groupId);
       if (response.success) {
-        console.log("Response data is:", response.data);
         setUpcomingSession(response.data[0]);
       }
     } catch (error: any) {
@@ -293,6 +292,22 @@ export default function GroupHomeScreen() {
   };
 
   const handleUpdateGroup = async () => {
+    // Validation
+    if (!editForm.name.trim()) {
+      toast.showError("Group name is required");
+      return;
+    }
+
+    if (editForm.description.trim().length < 10) {
+      toast.showError("Description must be at least 10 characters");
+      return;
+    }
+
+    if (editForm.max_participants < 2 || editForm.max_participants > 10) {
+      toast.showError("Participants must be between 2 and 10");
+      return;
+    }
+
     setIsUpdating(true);
     try {
       await groupsAPI.updateGroup(groupId, {
@@ -309,7 +324,6 @@ export default function GroupHomeScreen() {
         visibility: editForm.visibility,
         maxParticipants: editForm.max_participants,
       });
-      toast.showSuccess("Group updated successfully!");
       setShowEditModal(false);
     } catch (error: any) {
       toast.showError(error.response?.data?.error || "Failed to update group");
@@ -538,7 +552,13 @@ export default function GroupHomeScreen() {
 
             {/* Session placeholder */}
             <TouchableOpacity
-              style={styles.sessionPlaceholder}
+              style={[
+                styles.sessionPlaceholder,
+                !upcomingSession && {
+                  justifyContent: "center",
+                  alignItems: "center",
+                },
+              ]}
               onPress={() =>
                 navigation.navigate("GroupTabs", {
                   screen: "GroupSessions",
@@ -546,8 +566,11 @@ export default function GroupHomeScreen() {
               }
             >
               <Text style={styles.sessionPlaceholderText}>
-                Start {upcomingSession?.title}
+                {upcomingSession
+                  ? `Start ${upcomingSession.title}`
+                  : "Start Session"}
               </Text>
+
               <MaterialCommunityIcons
                 name="arrow-right-circle"
                 size={24}
@@ -851,7 +874,7 @@ export default function GroupHomeScreen() {
 
           {/* Max participants */}
           <Input
-            label="Max Participants"
+            label="Max Participants (2-10)"
             labelStyle={{ color: COLORS.darkBlue }}
             value={String(editForm.max_participants)}
             onChangeText={(v) => {
@@ -890,14 +913,13 @@ export default function GroupHomeScreen() {
             }
           />
         </View>
+        <ErrorToast
+          visible={toast.visible}
+          message={toast.message}
+          type={toast.type}
+          onDismiss={toast.hideToast}
+        />
       </Modal>
-
-      <ErrorToast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-        onDismiss={toast.hideToast}
-      />
     </SafeAreaView>
   );
 }
@@ -954,10 +976,15 @@ const styles = StyleSheet.create({
     position: "relative",
     maxHeight: 400,
   },
-  groupInfoLeft: { flexDirection: "row", gap: SPACING.xxxl },
+  groupInfoLeft: {
+    flexDirection: "row",
+    gap: SPACING.xxxl,
+    height: "60%",
+    alignItems: "center",
+  },
   groupCoverImage: {
-    width: 110,
-    height: 110,
+    width: 150,
+    height: 150,
     borderRadius: 55,
     borderWidth: 4,
     borderColor: COLORS.darkBlue,
@@ -984,7 +1011,7 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.5)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 1,
-    marginBottom: SPACING.xxl,
+    marginBottom: SPACING.lg,
   },
   groupInfoRow: {
     flexDirection: "row",
@@ -1005,10 +1032,10 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "flex-start",
     justifyContent: "space-around",
-    backgroundColor: "#81C3D780",
+    backgroundColor: "#18b5e680",
     borderRadius: BORDER_RADIUS.lg,
     paddingHorizontal: SPACING.md,
-    height: "60%",
+    height: "50%",
   },
   sessionPlaceholderText: {
     fontFamily: FONT_USAGE.button,

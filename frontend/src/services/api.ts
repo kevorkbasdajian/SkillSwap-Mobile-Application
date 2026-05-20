@@ -69,7 +69,7 @@ export const authAPI = {
   resetPassword: async (token: string, newPassword: string) => {
     const response = await api.post("/auth/reset-password", {
       token,
-      new_password: newPassword,
+      password: newPassword,
     });
     return response.data;
   },
@@ -394,10 +394,14 @@ export const sessionsAPI = {
     return response.data;
   },
   createSession: async (groupId: string, formData: FormData) => {
-    const response = await api.post(`/sessions/groups/${groupId}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
+    try {
+      const response = await api.post(`/sessions/groups/${groupId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error(error.response.data);
+    }
   },
   getSessionDetails: async (sessionId: string) => {
     const response = await api.get(`/sessions/${sessionId}`);
@@ -425,6 +429,14 @@ export const sessionsAPI = {
   },
   getUpcomingSession: async (groupId: number) => {
     const response = await api.get(`/sessions/${groupId}/upcoming`);
+    return response.data;
+  },
+  uploadArtifacts: async (sessionId: string, formData: FormData) => {
+    const response = await api.post(
+      `/sessions/${sessionId}/artifacts`,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
     return response.data;
   },
 };

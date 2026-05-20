@@ -39,6 +39,7 @@ import { ErrorToast } from "@/src/components/common/ErrorToast";
 import { GradientBackground } from "@/src/components/common/GradientBackground";
 import LottieView from "lottie-react-native";
 import { LoadingScreen } from "@/src/components/common/LoadingScreen";
+import { QAPanel } from "@/src/components/features/QAPanel";
 
 // type for navigation
 type GroupSessionsNavProp = CompositeNavigationProp<
@@ -161,6 +162,7 @@ export default function GroupSessionsScreen() {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<SelectedFile[]>([]);
+  const [showQA, setShowQA] = useState(false);
 
   //---------------Hooks-----------
   useEffect(() => {
@@ -231,6 +233,7 @@ export default function GroupSessionsScreen() {
     const endMins = endTime.getHours() * 60 + endTime.getMinutes();
     if (endMins <= startMins) {
       toast.showError("End time must be after start time");
+      return;
     }
 
     setIsCreating(true);
@@ -491,9 +494,7 @@ export default function GroupSessionsScreen() {
               color={COLORS.midBlue}
             />
             <Text style={styles.uploadText}>Upload Material</Text>
-            <Text style={styles.uploadSubtext}>
-              PDF, Word, Excel, PowerPoint
-            </Text>
+            <Text style={styles.uploadSubtext}>PDF, Word</Text>
           </TouchableOpacity>
 
           {/* Selected files */}
@@ -559,68 +560,104 @@ export default function GroupSessionsScreen() {
     return <LoadingScreen variant="orange" />;
   }
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <Header
-        title="Sessions"
-        showBackButton={false}
-        style={{ backgroundColor: COLORS.darkGray }}
-      />
+    <View style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <Header
+          title="Sessions"
+          showBackButton={false}
+          style={{ backgroundColor: COLORS.darkGray }}
+        />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Session cards */}
-        {sessions.map((session, index) => renderSessionCard(session, index))}
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Session cards */}
+          {sessions.map((session, index) => renderSessionCard(session, index))}
 
-        {/* Create Session card */}
-        {userRole === "teacher" && (
-          <View style={{ marginTop: SPACING.massive }}>
-            <GradientBackground
-              variant="darkBlueToMidLightBlue"
-              style={styles.sessionCard}
-            >
-              <TouchableOpacity
-                onPress={() => setShowCreateModal(true)}
-                activeOpacity={0.8}
-                style={styles.sessionCardContainer}
+          {sessions.length === 0 && userRole === "learner" && (
+            <View style={styles.emptyContainer}>
+              <MaterialCommunityIcons
+                name="telescope"
+                size={60}
+                color={COLORS.dimBlue}
+              />
+              <Text style={styles.emptyText}>No sessions yet</Text>
+              <Text style={styles.emptySubtext}>
+                The teacher hasn't created any sessions for this group
+              </Text>
+            </View>
+          )}
+
+          {/* Create Session card */}
+          {userRole === "teacher" && (
+            <View style={{ marginTop: SPACING.massive }}>
+              <GradientBackground
+                variant="darkBlueToMidLightBlue"
+                style={styles.sessionCard}
               >
-                <View style={styles.header}>
-                  <Text
-                    style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
-                  >
-                    Create Session
-                  </Text>
-                  <MaterialCommunityIcons
-                    name="plus"
-                    size={28}
-                    color={COLORS.white}
-                  />
-                </View>
-
-                <View style={styles.sessionCardBottom}>
-                  <View style={styles.durationRow}>
+                <TouchableOpacity
+                  onPress={() => setShowCreateModal(true)}
+                  activeOpacity={0.8}
+                  style={styles.sessionCardContainer}
+                >
+                  <View style={styles.header}>
+                    <Text
+                      style={[styles.sessionTitle, { fontSize: FONT_SIZES.lg }]}
+                    >
+                      Create Session
+                    </Text>
                     <MaterialCommunityIcons
-                      name="timer-sand"
-                      size={40}
-                      color={COLORS.lightBlue}
+                      name="plus"
+                      size={28}
+                      color={COLORS.white}
                     />
                   </View>
-                </View>
-                <LottieView
-                  source={require("../../assets/animations/createSessionAnimation.json")}
-                  autoPlay
-                  loop
-                  style={styles.animation}
-                />
-              </TouchableOpacity>
-            </GradientBackground>
-          </View>
-        )}
-      </ScrollView>
 
-      {userRole === "teacher" && renderCreateModal()}
-    </SafeAreaView>
+                  <View style={styles.sessionCardBottom}>
+                    <View style={styles.durationRow}>
+                      <MaterialCommunityIcons
+                        name="timer-sand"
+                        size={40}
+                        color={COLORS.lightBlue}
+                      />
+                    </View>
+                  </View>
+                  <LottieView
+                    source={require("../../assets/animations/createSessionAnimation.json")}
+                    autoPlay
+                    loop
+                    style={styles.animation}
+                  />
+                </TouchableOpacity>
+              </GradientBackground>
+            </View>
+          )}
+        </ScrollView>
+
+        {userRole === "teacher" && renderCreateModal()}
+      </SafeAreaView>
+      {userRole === "learner" && (
+        <>
+          <TouchableOpacity
+            style={styles.qaBtn}
+            onPress={() => setShowQA(true)}
+            activeOpacity={0.85}
+          >
+            <MaterialCommunityIcons
+              name="robot-happy-outline"
+              size={34}
+              color={COLORS.white}
+            />
+          </TouchableOpacity>
+          <QAPanel
+            visible={showQA}
+            groupId={groupId}
+            onClose={() => setShowQA(false)}
+          />
+        </>
+      )}
+    </View>
   );
 }
 const styles = StyleSheet.create({
@@ -853,5 +890,36 @@ const styles = StyleSheet.create({
     fontFamily: FONT_USAGE.label,
     fontSize: FONT_SIZES.xs,
     color: COLORS.midBlack,
+  },
+
+  emptyContainer: {
+    top: 200,
+    alignItems: "center",
+    paddingVertical: SPACING.massive,
+    gap: SPACING.md,
+  },
+  emptyText: {
+    fontFamily: FONT_USAGE.heading,
+    fontSize: FONT_SIZES.xl,
+    color: COLORS.lightBlue,
+  },
+  emptySubtext: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.dimBlue,
+    textAlign: "center",
+    paddingHorizontal: SPACING.xl,
+  },
+  qaBtn: {
+    position: "absolute",
+    right: 30,
+    bottom: 50,
+    width: 70,
+    height: 70,
+    borderRadius: 38,
+    backgroundColor: COLORS.lightOrange,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
   },
 });

@@ -200,6 +200,9 @@ export default function ProfileScreen() {
             (friend: friend) => friend.friendship_id !== friendshipId,
           ),
         );
+        setProfile((prev) =>
+          prev ? { ...prev, friendsCount: (prev.friendsCount ?? 1) - 1 } : prev,
+        );
       }
     } catch (error: any) {
       toast.showError("Error while removing friend");
@@ -262,6 +265,7 @@ export default function ProfileScreen() {
         style={styles.friendItem}
         onPress={() => {
           navigation.push("UserProfile", { userId: friend.friend.id });
+          setShowFriendsModal(false);
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -280,6 +284,7 @@ export default function ProfileScreen() {
           <TouchableOpacity
             style={{
               marginRight: "auto",
+              padding: 10,
             }}
             onPress={() => removeFriend(friend.friendship_id)}
             disabled={deletingfriend}
@@ -797,9 +802,6 @@ export default function ProfileScreen() {
           size="large"
           onClose={() => {
             setShowFriendsModal(false);
-            if (profile?.friendsCount != friends.length) {
-              loadProfile();
-            }
           }}
         >
           <ScrollView

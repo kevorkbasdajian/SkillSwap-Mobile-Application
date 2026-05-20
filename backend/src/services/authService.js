@@ -83,12 +83,10 @@ const authService = {
 module.exports = authService;
 
 /*
-1- if a user wants to register, first we check if a similar user exists.
-If not, we hash the password and create a new user. Then we generate a new token,
+1- If a user wants to register, first we check if a similar user exists.
+If not, we hash the password and create a new user, with its settings record. Then we generate a new token,
 by using the id and the email of the user.
-2-if a user wants to login, first we check if such a user exists by email. Then,
+2-If a user wants to login, first we check if such a user exists by email. Then,
 we compare the password with the hashed_password. If it matches, we generate a JWT
 token . Finally, we remove the hashed_password from the response.
-
-
 */

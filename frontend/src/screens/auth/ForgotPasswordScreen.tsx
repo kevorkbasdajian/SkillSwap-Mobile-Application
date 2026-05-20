@@ -65,6 +65,7 @@ export default function ForgotPasswordScreen() {
         setShowModal(true);
       }
     } catch (error: any) {
+      console.error("The error is: ", error);
       const errorMessage =
         error.response?.data?.message ||
         "Failed to send reset email. Please try again.";
@@ -215,7 +216,7 @@ export default function ForgotPasswordScreen() {
         onClose={() => {
           setShowModal(false);
           if (errorMessage === "") {
-            navigation.navigate("Login");
+            navigation.navigate("ResetPassword");
           }
         }}
         showCloseButton={true}

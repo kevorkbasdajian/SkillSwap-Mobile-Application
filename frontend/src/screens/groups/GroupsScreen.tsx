@@ -605,7 +605,7 @@ const styles = StyleSheet.create({
   },
   pendingBadge: {
     position: "absolute",
-    top: SPACING.md,
+    top: 40,
     right: SPACING.md,
     backgroundColor: COLORS.lightOrange,
     borderRadius: BORDER_RADIUS.round,
@@ -672,8 +672,8 @@ const styles = StyleSheet.create({
   },
   cardImageContainer: {},
   cardImage: {
-    width: 80,
-    height: 90,
+    width: 110,
+    height: 110,
     borderRadius: BORDER_RADIUS.lg,
   },
   cardImagePlaceholder: {

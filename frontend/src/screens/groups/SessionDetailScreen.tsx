@@ -29,6 +29,7 @@ import { Button } from "@/src/components/common/Button";
 import { ErrorToast } from "@/src/components/common/ErrorToast";
 import { useAuth } from "@/src/context/AuthContext";
 import { LoadingScreen } from "@/src/components/common/LoadingScreen";
+import * as DocumentPicker from "expo-document-picker";
 
 //Type for navigation
 type SessionDetailNavProp = NativeStackNavigationProp<
@@ -161,6 +162,17 @@ export default function SessionDetailScreen() {
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const { user } = useAuth();
 
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadFiles, setUploadFiles] = useState<
+    Array<{
+      uri: string;
+      name: string;
+      mimeType: string;
+      size: number;
+    }>
+  >([]);
+  const [showUploadSection, setShowUploadSection] = useState(false);
+
   //---------------Hooks-----------
   useEffect(() => {
     loadAll();
@@ -189,7 +201,7 @@ export default function SessionDetailScreen() {
     try {
       await sessionsAPI.checkInToSession(sessionId);
       toast.showSuccess("Checked in successfully!");
-      loadAll();
+      await loadAll();
     } catch (error: any) {
       toast.showError(error.response?.data?.error || "Failed to check in");
     } finally {
@@ -249,6 +261,57 @@ export default function SessionDetailScreen() {
     );
   };
 
+  const handlePickFiles = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
+      if (!result.canceled && result.assets) {
+        const newFiles = result.assets.map((a) => ({
+          uri: a.uri,
+          name: a.name,
+          mimeType: a.mimeType || "application/octet-stream",
+          size: a.size || 0,
+        }));
+        setUploadFiles((prev) => [...prev, ...newFiles]);
+      }
+    } catch {
+      toast.showError("Failed to pick files");
+    }
+  };
+
+  const handleUploadArtifacts = async () => {
+    if (uploadFiles.length === 0) {
+      toast.showError("Please select at least one file");
+      return;
+    }
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      for (const file of uploadFiles) {
+        formData.append("artifacts", {
+          uri: file.uri,
+          name: file.name,
+          type: file.mimeType,
+        } as any);
+      }
+      const response = await sessionsAPI.uploadArtifacts(sessionId, formData);
+      if (response.success) {
+        toast.showSuccess("Files uploaded successfully!");
+        setUploadFiles([]);
+        setShowUploadSection(false);
+        // Refresh artifacts
+        const artifactsRes = await sessionsAPI.getSessionArtifacts(sessionId);
+        if (artifactsRes.success) setArtifacts(artifactsRes.data);
+      }
+    } catch (error: any) {
+      toast.showError(error.response?.data?.error || "Upload failed");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const hanldeOpenArtifact = async (url: string) => {
     try {
       await Linking.openURL(url);
@@ -257,20 +320,6 @@ export default function SessionDetailScreen() {
     }
   };
 
-  // if (isLoading) {
-  //   return (
-  //     <SafeAreaView style={styles.container}>
-  //       <Header
-  //         title="Session Details"
-  //         showBackButton
-  //         handleOnPress={() => navigation.goBack()}
-  //       />
-  //       <View style={styles.loadingContainer}>
-  //         <ActivityIndicator size="large" color={COLORS.lightBlue} />
-  //       </View>
-  //     </SafeAreaView>
-  //   );
-  // }
   if (isLoading) return <LoadingScreen />;
 
   if (!session) {
@@ -449,6 +498,108 @@ export default function SessionDetailScreen() {
                   </View>
                 );
               })}
+            </View>
+          )}
+
+          {/* Upload section — teacher only */}
+          {session?.is_creator && session.status !== "completed" && (
+            <View style={uploadStyles.uploadSection}>
+              <TouchableOpacity
+                style={uploadStyles.uploadToggle}
+                onPress={() => {
+                  setShowUploadSection(!showUploadSection);
+                  setUploadFiles([]);
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={showUploadSection ? "close" : "upload"}
+                  size={18}
+                  color={COLORS.midBlue}
+                />
+                <Text style={uploadStyles.uploadToggleText}>
+                  {showUploadSection ? "Cancel" : "Upload New Material"}
+                </Text>
+              </TouchableOpacity>
+
+              {showUploadSection && (
+                <View style={uploadStyles.uploadBody}>
+                  {/* File picker area */}
+                  <TouchableOpacity
+                    style={uploadStyles.pickArea}
+                    onPress={handlePickFiles}
+                  >
+                    <MaterialCommunityIcons
+                      name="cloud-upload-outline"
+                      size={28}
+                      color={COLORS.midBlue}
+                    />
+                    <Text style={uploadStyles.pickAreaText}>
+                      Tap to select files
+                    </Text>
+                    <Text style={uploadStyles.pickAreaSub}>
+                      PDF, Word, Excel, PowerPoint
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Selected files */}
+                  {uploadFiles.length > 0 && (
+                    <View style={uploadStyles.filesList}>
+                      {uploadFiles.map((file, i) => {
+                        const icon = getFileIcon(file.mimeType, file.name);
+                        return (
+                          <View key={i} style={uploadStyles.fileItem}>
+                            <MaterialCommunityIcons
+                              name={icon.name as any}
+                              size={22}
+                              color={icon.color}
+                            />
+                            <Text
+                              style={uploadStyles.fileName}
+                              numberOfLines={1}
+                            >
+                              {file.name}
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() =>
+                                setUploadFiles((prev) =>
+                                  prev.filter((_, idx) => idx !== i),
+                                )
+                              }
+                            >
+                              <MaterialCommunityIcons
+                                name="close-circle"
+                                size={18}
+                                color={COLORS.error}
+                              />
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
+
+                  {/* Upload button */}
+                  {uploadFiles.length > 0 && (
+                    <Button
+                      title={`Upload ${uploadFiles.length} File${uploadFiles.length > 1 ? "s" : ""}`}
+                      variant="primary"
+                      size="medium"
+                      fullWidth
+                      loading={isUploading}
+                      disabled={isUploading}
+                      onPress={handleUploadArtifacts}
+                      style={{ marginTop: SPACING.sm }}
+                      icon={
+                        <MaterialCommunityIcons
+                          name="upload"
+                          size={18}
+                          color={COLORS.white}
+                        />
+                      }
+                    />
+                  )}
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -711,5 +862,67 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     gap: SPACING.md,
+  },
+});
+
+const uploadStyles = StyleSheet.create({
+  uploadSection: {
+    marginTop: SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.dimBlue,
+    paddingTop: SPACING.md,
+    gap: SPACING.md,
+    width: "100%",
+  },
+  uploadToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+    marginInline: "auto",
+    backgroundColor: COLORS.dimBlue,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    borderRadius: BORDER_RADIUS.round,
+  },
+  uploadToggleText: {
+    fontFamily: FONT_USAGE.button,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.midBlue,
+  },
+  uploadBody: { gap: SPACING.md },
+  pickArea: {
+    borderWidth: 2,
+    borderColor: COLORS.midBlue,
+    borderStyle: "dashed",
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.xl,
+    alignItems: "center",
+    gap: SPACING.xs,
+    backgroundColor: "rgba(50,146,175,0.06)",
+  },
+  pickAreaText: {
+    fontFamily: FONT_USAGE.button,
+    fontSize: FONT_SIZES.sm,
+    color: COLORS.midBlue,
+  },
+  pickAreaSub: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.midBlack,
+  },
+  filesList: { gap: SPACING.sm },
+  fileItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
+    backgroundColor: COLORS.white,
+    padding: SPACING.sm,
+    borderRadius: BORDER_RADIUS.md,
+  },
+  fileName: {
+    flex: 1,
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.darkBlue,
   },
 });

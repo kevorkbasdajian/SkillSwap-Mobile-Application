@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import React from "react";
+import { View, StyleSheet } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -7,7 +7,6 @@ import { COLORS, FONT_SIZES } from "../constants";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { GroupTabParamList, GroupStackParamList } from "./types";
 import { GroupProvider, useGroupContext } from "../context/GroupContext";
-import { QAPanel } from "../components/features/QAPanel";
 
 import GroupHomeScreen from "../screens/groups/GroupHomeScreen";
 import GroupChatScreen from "../screens/groups/GroupChatScreen";
@@ -18,7 +17,6 @@ import SessionDetailScreen from "../screens/groups/SessionDetailScreen";
 const Tab = createBottomTabNavigator<GroupTabParamList>();
 const Stack = createNativeStackNavigator<GroupStackParamList>();
 
-// ── Tab navigator (no QA logic here) ────────────────────────────────────────
 function GroupTabs() {
   const insets = useSafeAreaInsets();
 
@@ -80,7 +78,6 @@ function GroupTabs() {
   );
 }
 
-// ── Stack navigator (no QA logic here) ──────────────────────────────────────
 function GroupStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -96,37 +93,10 @@ function GroupStack() {
 
 // ── Inner content: has access to GroupContext ────────────────────────────────
 function GroupNavigatorContent() {
-  const { userRole, groupId } = useGroupContext();
-  const insets = useSafeAreaInsets();
-  const [showQA, setShowQA] = useState(false);
-
   return (
     <View style={styles.container}>
       {/* Stack + tabs */}
       <GroupStack />
-
-      {/* QA floating button — learners only, floats above all screens */}
-      {userRole === "learner" && (
-        <>
-          <TouchableOpacity
-            style={[styles.qaBtn, { bottom: 132 + insets.bottom }]}
-            onPress={() => setShowQA(true)}
-            activeOpacity={0.85}
-          >
-            <MaterialCommunityIcons
-              name="robot-happy-outline"
-              size={28}
-              color={COLORS.white}
-            />
-          </TouchableOpacity>
-
-          <QAPanel
-            visible={showQA}
-            groupId={groupId}
-            onClose={() => setShowQA(false)}
-          />
-        </>
-      )}
     </View>
   );
 }
@@ -143,17 +113,5 @@ export default function GroupNavigator() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  qaBtn: {
-    position: "absolute",
-    right: 30,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.lightOrange,
-    justifyContent: "center",
-    alignItems: "center",
-
-    zIndex: 9999,
   },
 });

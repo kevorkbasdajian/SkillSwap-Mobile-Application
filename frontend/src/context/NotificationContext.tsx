@@ -97,12 +97,6 @@ export function NotificationProvider({
         setIsConnected(false);
       });
 
-      // socket.on("notification", (notification: any) => {
-      //   console.log("SOCKET notification shape:", JSON.stringify(notification));
-
-      //   setNotifications((prev) => [notification.data, ...prev]);
-      //   console.log("-------------------------------------", notification.data);
-      // });
       socket.on("notification", (notification: any) => {
         console.log("SOCKET notification shape:", JSON.stringify(notification));
 

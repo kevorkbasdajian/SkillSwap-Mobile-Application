@@ -41,8 +41,6 @@ const sendEmail = async (to, subject, html) => {
 };
 
 const sendPasswordResetEmail = async (email, resetToken, userName) => {
-  const resetUrl = `https://medallic-unproscriptively-cori.ngrok-free.dev/reset-password?token=${resetToken}`;
-
   const html = `
     <!doctype html>
 <html>
@@ -97,15 +95,12 @@ const sendPasswordResetEmail = async (email, resetToken, userName) => {
         <h2>Password Reset Request</h2>
         <p>Hi ${userName},</p>
         <p>
-          We received a request to reset your password. Click the button below
-          to create a new password:
+          We received a request to reset your password.
         </p>
-        <p style="text-align: center">
-          <a href="${resetUrl}" class="button">Reset Password</a>
-        </p>
-        <p>Or copy and paste this link into your browser:</p>
-        <p style="word-break: break-all; color: #007bff">${resetUrl}</p>
-        <p><strong>This link will expire in 1 hour.</strong></p>
+        
+        <p>Please copy and paste this token into the screen that you were directed on in the SkillSwap app:</p>
+        <p style="color: #007bff">${resetToken}</p>
+        <p><strong>This token will expire in 1 hour.</strong></p>
         <p>
           If you didn't request a password reset, you can safely ignore this
           email.

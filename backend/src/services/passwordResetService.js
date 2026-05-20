@@ -104,11 +104,11 @@ const passwordResetService = {
 module.exports = passwordResetService;
 
 /*
-1- requestPasswordReset: First, it selects the user with the provided email. Then, it generates
+1- RequestPasswordReset: First, it selects the user with the provided email. Then, it generates
 a random resetToken to be used for validation. Then it sets the expiration date of the token to 1
 hour and deletes any existing reset token related to the same user. Then it inserts the new token
 and sends an email to the user.
-2- verifyResetToken: This function first selects the record for the token, checks if it is valid/ not used
+2- VerifyResetToken: This function first selects the record for the token, checks if it is valid/ not used
 , and also checks if it has not been expired. Then, it returns the user Id and the valid success message.
 3- resetPassword: First, we verify the token.
 */

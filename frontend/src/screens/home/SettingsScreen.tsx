@@ -105,9 +105,9 @@ export default function SettingsScreen() {
   };
 
   //4-handleChangePassword: Navigate to change password screen
-  const handleChangePassword = () => {
-    // navigation.navigate("ChangePassword");
-  };
+  // const handleChangePassword = () => {
+  //   navigation.navigate("ChangePassword");
+  // };
 
   //5-handleDeleteAccount: Confirm then delete account
   const handleDeleteAccount = () => {
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
           <Text style={styles.sectionLabel}>Account & Settings</Text>
 
           {/* Change Password */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.settingRow}
             onPress={handleChangePassword}
             activeOpacity={0.7}
@@ -235,7 +235,7 @@ export default function SettingsScreen() {
                 color={COLORS.skinToneOrange2}
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {/* Delete Account */}
           <TouchableOpacity

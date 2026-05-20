@@ -1,5 +1,4 @@
-/* This file is to validate data being sent by forms during register,
-login, and completion of profile */
+/* This file is to validate data being sent by forms */
 const Joi = require("joi");
 
 //This schema is for registration
@@ -220,7 +219,7 @@ const createSessionSchema = Joi.object({
       "any.only":
         "Session type must be meeting, review, practice, or problem_solving",
     }),
-  scheduled_date: Joi.date().iso().min("now").required().messages({
+  scheduled_date: Joi.date().iso().required().messages({
     "date.min": "Session date must be in the future",
     "any.required": "Scheduled date is required",
   }),
@@ -330,7 +329,6 @@ module.exports = {
 
 /*
 1- Joi is JavaScript library used for data validation.
-2- We have three schemas, for signup, login, and completion of profiles.
 3- Custom messages are delivered in case any of the validation rules is breached and not met.
 4- Icon/image file uploads will be handled by multer middleware
 */

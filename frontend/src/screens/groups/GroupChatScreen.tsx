@@ -473,6 +473,7 @@ const CreatePollModal: React.FC<{
   const [question, setQuestion] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [allowMultiple, setAllowMultiple] = useState(false);
+  const toast = useErrorToast();
 
   const addOption = () => {
     if (options.length < 10) setOptions([...options, ""]);
@@ -492,18 +493,23 @@ const CreatePollModal: React.FC<{
   const handleSubmit = () => {
     const filledOptions = options.filter((o) => o.trim().length > 0);
     if (question.trim().length < 5) {
-      Alert.alert("Error", "Question must be at least 5 characters");
+      toast.showError("Question must be at least 5 characters");
       return;
     }
     if (filledOptions.length < 2) {
-      Alert.alert("Error", "At least 2 options required");
+      toast.showError("At least 2 options required");
       return;
     }
     onSubmit({
       question: question.trim(),
+
       options: filledOptions,
       allow_multiple_answers: allowMultiple,
     });
+
+    setQuestion("");
+    setOptions(["", ""]);
+    setAllowMultiple(false);
   };
 
   return (
@@ -615,6 +621,12 @@ const CreatePollModal: React.FC<{
           </ScrollView>
         </Pressable>
       </Pressable>
+      <ErrorToast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={toast.hideToast}
+      />
     </Modal>
   );
 };
@@ -657,7 +669,7 @@ const pollModalStyles = StyleSheet.create({
     alignItems: "center",
     gap: SPACING.sm,
     padding: SPACING.sm,
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
   },
   removeOption: {
     marginBottom: SPACING.lg,
@@ -1374,7 +1386,9 @@ export default function GroupChatScreen() {
       {/* Create Poll modal */}
       <CreatePollModal
         visible={showCreatePoll}
-        onClose={() => setShowCreatePoll(false)}
+        onClose={() => {
+          setShowCreatePoll(false);
+        }}
         onSubmit={handleCreatePoll}
         isLoading={isCreatingPoll}
       />
@@ -1605,12 +1619,12 @@ const msgStyles = StyleSheet.create({
   replyName: {
     fontFamily: FONT_USAGE.button,
     fontSize: FONT_SIZES.xs,
-    color: COLORS.midBlue,
+    color: COLORS.lightOrange,
   },
   replyContent: {
     fontFamily: FONT_USAGE.body,
     fontSize: FONT_SIZES.xs,
-    color: COLORS.lightBlack3,
+    color: COLORS.darkGray,
   },
   bubble: {
     borderRadius: BORDER_RADIUS.xl,

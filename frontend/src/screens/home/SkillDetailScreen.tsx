@@ -1177,15 +1177,18 @@ const styles = StyleSheet.create({
   groupCardImageContainer: {
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: BORDER_RADIUS.xl,
+    overflow: "hidden",
   },
   groupCardImage: {
     width: 75,
     height: 75,
-    borderRadius: BORDER_RADIUS.round,
+    borderRadius: BORDER_RADIUS.xl,
   },
   groupCardImagePlaceholder: {
     width: 75,
     height: 75,
+    borderRadius: BORDER_RADIUS.xl,
     backgroundColor: COLORS.dimBlue,
     justifyContent: "center",
     alignItems: "center",

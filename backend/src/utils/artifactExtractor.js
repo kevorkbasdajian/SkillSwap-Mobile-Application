@@ -160,8 +160,6 @@ const artifactExtractor = {
     fileName,
   ) => {
     try {
-      console.log(`Processing artifact: ${fileName}`);
-      console.log("Artifact id is", artifactId);
       //Step 1: Extract text from artifact
       const extractedText = await artifactExtractor.extractTextFromArtifact(
         artifactUrl,

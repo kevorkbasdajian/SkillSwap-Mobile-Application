@@ -139,16 +139,20 @@ export default function UserProfileScreen() {
         case "none":
           await friendAPI.sendFriendRequest(targetUserId);
           toast.showSuccess("Friend request sent!");
+          setProfile((prev) =>
+            prev ? { ...prev, friendshipStatus: "pending_sent" } : prev,
+          );
           break;
         case "pending_received":
           await friendAPI.acceptFriendRequest(profile.friendshipId);
           toast.showSuccess("Friend request accepted!");
+          setProfile((prev) =>
+            prev ? { ...prev, friendshipStatus: "friends" } : prev,
+          );
           break;
         case "friends":
           break;
       }
-      //Reload profile to update button state
-      await loadProfile();
     } catch (error: any) {
       toast.showError(error.response?.data?.error || "action failed");
     } finally {

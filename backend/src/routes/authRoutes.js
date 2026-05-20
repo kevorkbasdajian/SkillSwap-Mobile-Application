@@ -10,10 +10,10 @@ const {
   resetPasswordSchema,
 } = require("../utils/validators");
 
-//POST /api/auth/register
+// POST /api/auth/register
 router.post("/register", validate(registerSchema), authController.register);
 
-//POST /api/auth/login
+// POST /api/auth/login
 router.post("/login", validate(loginSchema), authController.login);
 
 // POST /api/auth/forgot-password
@@ -36,5 +36,5 @@ router.post(
 module.exports = router;
 
 /*
-1- we create a router, which handles 'register' and 'login'.
+1- we create a router, which handles 'register', 'login','forgot-password request', and 'reset-password-request'.
 */

@@ -165,9 +165,9 @@ const sessionService = {
       .eq("user_id", userId)
       .single();
 
-    if (participantError || !participant) {
-      throw new Error("You are not a participant of this session");
-    }
+    // if (participantError || !participant) {
+    //   throw new Error("You are not a participant of this session");
+    // }
     const { data: artifacts, error } = await supabase
       .from("artifacts")
       .select(
@@ -468,18 +468,6 @@ const sessionService = {
       .eq("session_id", sessionId)
       .eq("user_id", userId)
       .single();
-
-    if (fetchError || !participant) {
-      throw new Error("You are not a participant of this session");
-    }
-
-    if (participant.attendance_status === "present") {
-      throw new Error("You have already checked in to this session");
-    }
-
-    if (participant.session.status !== "scheduled") {
-      throw new Error("Cannot check in to a session that is not scheduled");
-    }
 
     // Update attendance
     const { data: updated, error: updateError } = await supabase

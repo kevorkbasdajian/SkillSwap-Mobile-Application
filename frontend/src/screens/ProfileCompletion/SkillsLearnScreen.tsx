@@ -412,6 +412,10 @@ export default function SkillsLearnScreen() {
               {selectedSkills.length}
             </Text>
           </View>
+          {/* Minimum skills note */}
+          <Text style={styles.minNote}>
+            * Select at least 2 skills to continue
+          </Text>
 
           {/* Skills Grid */}
           <FlatList
@@ -464,6 +468,8 @@ export default function SkillsLearnScreen() {
               setShowAddSkillModal(false);
               setNewSkillName("");
               setLevel(null);
+              setNewSkillIcon("star");
+              setQuery("");
             }}
           >
             <View style={styles.modalContent}>
@@ -812,5 +818,12 @@ const styles = StyleSheet.create({
   iconBtnSelected: {
     backgroundColor: COLORS.midBlue,
     borderColor: COLORS.darkBlue,
+  },
+  minNote: {
+    fontFamily: FONT_USAGE.body,
+    fontSize: FONT_SIZES.xs,
+    color: COLORS.lightOrange,
+    marginBottom: SPACING.md,
+    marginLeft: SPACING.xs,
   },
 });

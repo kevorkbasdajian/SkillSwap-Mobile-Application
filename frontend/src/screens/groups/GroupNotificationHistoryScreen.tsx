@@ -18,7 +18,10 @@ import {
   Text,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "@/src/components/common/Button";
 import { Modal } from "@/src/components/common/Modal";
@@ -52,17 +55,12 @@ export default function GroupNotificationHistoryScreen() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const insets = useSafeAreaInsets();
 
   //---------------Hooks-----------
 
   useEffect(() => {
     loadHistory();
-    // setupSocketListener();
-
-    // return () => {
-    //   const socket = getSocket();
-    //   socket?.off("notification");
-    // };
   }, []);
 
   //---------------Functions-----------
@@ -79,23 +77,6 @@ export default function GroupNotificationHistoryScreen() {
       setIsLoading(false);
     }
   };
-
-  // const setupSocketListener = () => {
-  //   const socket = getSocket();
-  //   if (!socket) return;
-  //   socket.on("notification", (payload: any) => {
-  //     const raw = payload.data;
-
-  //     const formatted: HistoryNotification = {
-  //       id: raw.notifications.id,
-  //       title: raw.notifications.title,
-  //       message: raw.notifications.message,
-  //       created_at: raw.notifications.created_at,
-  //     };
-
-  //     setNotifications((prev) => [...prev, formatted]);
-  //   });
-  // };
 
   const handleSend = async () => {
     if (title.trim().length < 3) {
@@ -169,7 +150,12 @@ export default function GroupNotificationHistoryScreen() {
 
       {/* Send button */}
       {userRole === "teacher" && (
-        <View style={styles.sendButtonContainer}>
+        <View
+          style={[
+            styles.sendButtonContainer,
+            { paddingBottom: insets.bottom + SPACING.xl },
+          ]}
+        >
           <Button
             title="New Notification"
             variant="secondary"
